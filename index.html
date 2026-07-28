@@ -821,6 +821,7 @@
 
     const i18n = {
       en: {
+        pageTitle: "time remaining",
         days: "days",
         hours: "hours",
         minutes: "minutes",
@@ -834,6 +835,7 @@
         wind: "wind"
       },
       sv: {
+        pageTitle: "återstående tid",
         days: "dagar",
         hours: "timmar",
         minutes: "minuter",
@@ -847,6 +849,7 @@
         wind: "vind"
       },
       zh: {
+        pageTitle: "剩余时间",
         days: "天",
         hours: "小时",
         minutes: "分钟",
@@ -860,6 +863,7 @@
         wind: "风速"
       },
       ja: {
+        pageTitle: "残り時間",
         days: "日",
         hours: "時間",
         minutes: "分",
@@ -948,6 +952,7 @@
       document.getElementById("seconds").nextElementSibling.textContent = t("seconds");
 
       document.documentElement.lang = currentLanguage;
+      document.title = t("pageTitle");
       renderLocations();
       loadWeather();
       pickDailyQuote();
