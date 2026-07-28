@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>time remaining</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-start: #282a36;
+      --bg-end: #1f222c;
+      --orb-a: rgba(80, 250, 123, 0.16);
+      --orb-b: rgba(139, 233, 253, 0.12);
+      --panel: rgba(40, 42, 54, 0.88);
+      --panel-strong: rgba(52, 55, 70, 0.96);
+      --line: rgba(80, 250, 123, 0.18);
+      --text: #f8f8f2;
+      --muted: #b7bdcc;
+      --accent: #50fa7b;
+      --accent-soft: #8be9fd;
+      --accent-warm: #f1fa8c;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+    }
+
+    body[data-theme="light"] {
+      color-scheme: light;
+      --bg-start: #f6f7fb;
+      --bg-end: #dfe7e1;
+      --orb-a: rgba(80, 250, 123, 0.18);
+      --orb-b: rgba(98, 114, 164, 0.12);
+      --panel: rgba(255, 255, 255, 0.78);
+      --panel-strong: rgba(244, 247, 250, 0.96);
+      --line: rgba(68, 71, 90, 0.14);
+      --text: #282a36;
+      --muted: #5d6477;
+      --accent: #157f3b;
+      --accent-soft: #357e95;
+      --accent-warm: #7f8c2c;
+      --shadow: 0 24px 80px rgba(36, 44, 60, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Sans", "Helvetica Neue", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, var(--orb-a), transparent 28%),
+        radial-gradient(circle at top right, var(--orb-b), transparent 24%),
+        linear-gradient(160deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      overflow-x: hidden;
+      transition: background 220ms ease, color 220ms ease;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      width: 38rem;
+      height: 38rem;
+      border-radius: 50%;
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      top: -10rem;
+      left: -9rem;
+      background: rgba(80, 250, 123, 0.1);
+    }
+
+    body::after {
+      right: -10rem;
+      bottom: -12rem;
+      background: rgba(139, 233, 253, 0.08);
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(1120px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 3rem 0 4rem;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+
+    .hero {
+      padding: 1.2rem 1.2rem 1.6rem;
+      overflow: hidden;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .theme-toggle {
+      width: 2rem;
+      height: 2rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(80, 250, 123, 0.08);
+      color: var(--accent);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.88rem;
+      flex: 0 0 auto;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-1px);
+      background: rgba(80, 250, 123, 0.14);
+      border-color: var(--line);
+    }
+
+    .meta-row {
+      display: none;
+    }
+
+    .pill {
+      padding: 0.8rem 1rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .digits {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.45fr) repeat(3, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .digit-card {
+      position: relative;
+      padding: 1.35rem;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(80, 250, 123, 0.08), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(80, 250, 123, 0.16);
+      overflow: hidden;
+    }
+
+    .digit-card.days-card {
+      padding-inline: 1.6rem;
+    }
+
+    .digit-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(80, 250, 123, 0.08), transparent 50%);
+      pointer-events: none;
+    }
+
+    .digit-value {
+      font-size: clamp(2.6rem, 5vw, 4.4rem);
+      line-height: 0.9;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.05em;
+      text-shadow: 0 0 20px rgba(80, 250, 123, 0.12);
+      white-space: nowrap;
+      overflow: visible;
+      color: var(--accent);
+    }
+
+    .days-card .digit-value {
+      font-size: clamp(3rem, 5vw, 4.9rem);
+    }
+
+    .digit-label {
+      display: inline-block;
+      margin-top: 0.8rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+      letter-spacing: 0.02em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      margin-top: 1.25rem;
+    }
+
+    .panel {
+      padding: 1.4rem;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: 0.02em;
+    }
+
+    .section-subtitle {
+      display: none;
+    }
+
+    .location-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 0;
+    }
+
+    .location-card,
+    .quote-card {
+      border-radius: 22px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1rem;
+    }
+
+    .location-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.8rem;
+    }
+
+    .city-name {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .city-meta {
+      margin-top: 0.3rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .city-time {
+      margin-top: 0.9rem;
+      font-size: 1.9rem;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.04em;
+    }
+
+    .city-date {
+      margin-top: 0.4rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .weather-status {
+      color: var(--accent-warm);
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    .weather-temp {
+      margin: 0.8rem 0 0;
+      font-size: 2rem;
+      font-weight: 780;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .weather-details {
+      margin: 0.6rem 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.92rem;
+    }
+
+    .quote-card {
+      margin-top: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .language-bar {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 0.55rem;
+    }
+
+    .lang-button {
+      width: 2.1rem;
+      height: 2.1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .lang-button:hover {
+      transform: translateY(-1px);
+      border-color: var(--line);
+      background: rgba(80, 250, 123, 0.12);
+    }
+
+    .lang-button[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: rgba(80, 250, 123, 0.18);
+      box-shadow: 0 0 0 2px rgba(80, 250, 123, 0.12);
+    }
+
+    .quote-layout {
+      margin-top: 0;
+      display: block;
+      position: relative;
+      z-index: 1;
+      max-width: 42rem;
+      margin-inline: auto;
+    }
+
+    .quote-content {
+      min-width: 0;
+      display: grid;
+      gap: 0.45rem;
+      justify-items: start;
+    }
+
+    .quote-card::before {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 auto;
+      width: 12rem;
+      height: 12rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(98, 208, 255, 0.16), transparent 65%);
+      transform: translate(30%, 30%);
+    }
+
+    blockquote {
+      margin: 0;
+      font-size: 1.35rem;
+      line-height: 1.65;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    .quote-author {
+      margin-top: 0.6rem;
+      color: var(--accent);
+      font-size: 0.98rem;
+      letter-spacing: 0.03em;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+
+    .quote-note {
+      margin-top: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: fadeUp 800ms ease forwards;
+    }
+
+    .fade-up.delay-1 {
+      animation-delay: 100ms;
+    }
+
+    .fade-up.delay-2 {
+      animation-delay: 200ms;
+    }
+
+    .fade-up.delay-3 {
+      animation-delay: 300ms;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .location-grid,
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .digits {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: min(100% - 1rem, 100%);
+        padding: 1rem 0 2rem;
+      }
+
+      .hero,
+      .panel {
+        border-radius: 22px;
+      }
+
+      .hero-top {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+
+      .hero,
+      .panel,
+      .location-card,
+      .quote-card,
+      .digit-card {
+        padding: 1rem;
+      }
+
+      .digits,
+      .location-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero fade-up">
+      <div class="hero-top">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="toggle bright mode" title="toggle bright mode">◐</button>
+      </div>
+      <div class="meta-row">
+        <div class="pill" id="today-progress">loading today progress...</div>
+      </div>
+      <div class="digits" id="countdown-digits">
+        <article class="digit-card days-card">
+          <div class="digit-value" id="days">0</div>
+          <div class="digit-label">days</div>
+        </article>
+        <article class="digit-card">
+          <div class="digit-value" id="hours">0</div>
+          <div class="digit-label">hours</div>
+        </article>
+        <article class="digit-card">
+          <div class="digit-value" id="minutes">0</div>
+          <div class="digit-label">minutes</div>
+        </article>
+        <article class="digit-card">
+          <div class="digit-value" id="seconds">0</div>
+          <div class="digit-label">seconds</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel fade-up delay-1">
+        <div class="location-grid" id="location-grid"></div>
+      </div>
+    </section>
+
+    <section class="quote-card fade-up delay-3">
+      <div class="quote-layout">
+        <div class="quote-content">
+          <blockquote id="quote-text"></blockquote>
+          <div class="quote-author" id="quote-author"></div>
+          <div class="quote-note" id="quote-note"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="language-bar" id="language-bar" aria-label="language selector">
+      <button class="lang-button" type="button" data-lang="en" aria-label="english" title="english" aria-pressed="true">🇬🇧</button>
+      <button class="lang-button" type="button" data-lang="sv" aria-label="swedish" title="swedish" aria-pressed="false">🇸🇪</button>
+      <button class="lang-button" type="button" data-lang="zh" aria-label="chinese" title="chinese" aria-pressed="false">🇨🇳</button>
+      <button class="lang-button" type="button" data-lang="ja" aria-label="japanese" title="japanese" aria-pressed="false">🇯🇵</button>
+    </div>
+  </main>
+
+  <script>
+    const targetDate = new Date("2063-02-07T00:00:00");
+
+    const locations = [
+      {
+        name: "Shanghai",
+        zone: "Asia/Shanghai",
+        meta: "China standard time",
+        city: "Shanghai",
+        latitude: 31.2304,
+        longitude: 121.4737
+      },
+      {
+        name: "Malmö",
+        zone: "Europe/Amsterdam",
+        meta: "Central European time",
+        city: "Malmö",
+        latitude: 55.605,
+        longitude: 13.0038
+      },
+      {
+        name: "New York",
+        zone: "America/New_York",
+        meta: "Eastern time",
+        city: "New York City",
+        latitude: 40.7128,
+        longitude: -74.006
+      },
+      {
+        name: "California",
+        zone: "America/Los_Angeles",
+        meta: "Pacific time",
+        city: "Los Angeles",
+        latitude: 34.0522,
+        longitude: -118.2437
+      }
+    ];
+
+    const entrepreneurQuotes = [
+      {
+        text: "Innovation distinguishes between a leader and a follower.",
+        author: "Steve Jobs",
+        note: "Apple co-founder"
+      },
+      {
+        text: "Most things still remain to be done. A glorious future!",
+        author: "Ingvar Kamprad",
+        note: "IKEA founder"
+      },
+      {
+        text: "When something is important enough, you do it even if the odds are not in your favor.",
+        author: "Elon Musk",
+        note: "Tesla and SpaceX"
+      },
+      {
+        text: "Embrace what you do naturally, because people will pay for it.",
+        author: "Sara Blakely",
+        note: "Spanx founder"
+      },
+      {
+        text: "Play by the rules, but be ferocious.",
+        author: "Phil Knight",
+        note: "Nike co-founder"
+      },
+      {
+        text: "I knew that if I failed I would not regret that, but I knew the one thing I might regret is not trying.",
+        author: "Jeff Bezos",
+        note: "Amazon founder"
+      },
+      {
+        text: "Your most unhappy customers are your greatest source of learning.",
+        author: "Bill Gates",
+        note: "Microsoft co-founder"
+      },
+      {
+        text: "If everybody is moving forward together, then success takes care of itself.",
+        author: "Henry Ford",
+        note: "Ford founder"
+      },
+      {
+        text: "The way to get started is to quit talking and begin doing.",
+        author: "Walt Disney",
+        note: "Disney founder"
+      },
+      {
+        text: "The biggest risk is not taking any risk.",
+        author: "Mark Zuckerberg",
+        note: "Meta founder"
+      },
+      {
+        text: "Do not be embarrassed by your failures, learn from them and start again.",
+        author: "Richard Branson",
+        note: "Virgin founder"
+      },
+      {
+        text: "A brand for a company is like a reputation for a person.",
+        author: "Jeff Bezos",
+        note: "Amazon founder"
+      },
+      {
+        text: "Success is a lousy teacher. It seduces smart people into thinking they cannot lose.",
+        author: "Bill Gates",
+        note: "Microsoft co-founder"
+      },
+      {
+        text: "Timing, perseverance, and ten years of trying will eventually make you look like an overnight success.",
+        author: "Biz Stone",
+        note: "Twitter co-founder"
+      },
+      {
+        text: "Ideas are easy. Implementation is hard.",
+        author: "Guy Kawasaki",
+        note: "Entrepreneur and author"
+      },
+      {
+        text: "If you are not embarrassed by the first version of your product, you have launched too late.",
+        author: "Reid Hoffman",
+        note: "LinkedIn co-founder"
+      },
+      {
+        text: "Value your time. It is all you have and all you do not.",
+        author: "Marlon Weems",
+        note: "Startup operator"
+      },
+      {
+        text: "Chase the vision, not the money; the money will end up following you.",
+        author: "Tony Hsieh",
+        note: "Zappos former CEO"
+      },
+      {
+        text: "Do not worry about failure; you only have to be right once.",
+        author: "Drew Houston",
+        note: "Dropbox co-founder"
+      },
+      {
+        text: "Customer service should not be a department, it should be the entire company.",
+        author: "Tony Hsieh",
+        note: "Zappos former CEO"
+      },
+      {
+        text: "It is not about ideas. It is about making ideas happen.",
+        author: "Scott Belsky",
+        note: "Behance co-founder"
+      },
+      {
+        text: "Build something people want.",
+        author: "Paul Graham",
+        note: "Y Combinator co-founder"
+      },
+      {
+        text: "Do not play games that you do not understand, even if you see lots of other people making money from them.",
+        author: "Tony Hsieh",
+        note: "Zappos former CEO"
+      },
+      {
+        text: "The secret to successful hiring is this: look for the people who want to change the world.",
+        author: "Marc Benioff",
+        note: "Salesforce founder"
+      },
+      {
+        text: "Growth and comfort do not coexist.",
+        author: "Ginni Rometty",
+        note: "Former IBM CEO"
+      },
+      {
+        text: "Do not let others convince you that the idea is good when your gut tells you it is bad.",
+        author: "Kevin Rose",
+        note: "Entrepreneur and investor"
+      },
+      {
+        text: "If you cannot feed a team with two pizzas, it is too large.",
+        author: "Jeff Bezos",
+        note: "Amazon founder"
+      },
+      {
+        text: "Fearlessness is like a muscle. I know from my own life that the more I exercise it the more natural it becomes.",
+        author: "Arianna Huffington",
+        note: "HuffPost co-founder"
+      },
+      {
+        text: "You miss 100 percent of the shots you never take.",
+        author: "Wayne Gretzky",
+        note: "Sports legend often quoted in business"
+      },
+      {
+        text: "As long as you are going to be thinking anyway, think big.",
+        author: "Donald Trump",
+        note: "Business figure"
+      },
+      {
+        text: "Fall seven times and stand up eight.",
+        author: "Japanese proverb",
+        note: "entrepreneurial mindset"
+      }
+    ];
+
+    const i18n = {
+      en: {
+        days: "days",
+        hours: "hours",
+        minutes: "minutes",
+        seconds: "seconds",
+        loadingWeather: "loading weather",
+        fetchingWeather: "fetching current weather for {city}.",
+        weatherSymbol: "weather symbol {symbol}",
+        weatherUnavailable: "weather unavailable",
+        weatherUnavailableMsg: "unable to load weather right now. check network access and refresh.",
+        humidity: "humidity",
+        wind: "wind"
+      },
+      sv: {
+        days: "dagar",
+        hours: "timmar",
+        minutes: "minuter",
+        seconds: "sekunder",
+        loadingWeather: "laddar väder",
+        fetchingWeather: "hämtar aktuellt väder för {city}.",
+        weatherSymbol: "vädersymbol {symbol}",
+        weatherUnavailable: "väder saknas",
+        weatherUnavailableMsg: "kunde inte hämta väder nu. kontrollera nätverket och uppdatera.",
+        humidity: "luftfuktighet",
+        wind: "vind"
+      },
+      zh: {
+        days: "天",
+        hours: "小时",
+        minutes: "分钟",
+        seconds: "秒",
+        loadingWeather: "正在加载天气",
+        fetchingWeather: "正在获取{city}的实时天气。",
+        weatherSymbol: "天气符号 {symbol}",
+        weatherUnavailable: "天气不可用",
+        weatherUnavailableMsg: "暂时无法获取天气，请检查网络后刷新。",
+        humidity: "湿度",
+        wind: "风速"
+      },
+      ja: {
+        days: "日",
+        hours: "時間",
+        minutes: "分",
+        seconds: "秒",
+        loadingWeather: "天気を読み込み中",
+        fetchingWeather: "{city}の現在の天気を取得中です。",
+        weatherSymbol: "天気記号 {symbol}",
+        weatherUnavailable: "天気データなし",
+        weatherUnavailableMsg: "天気を取得できません。ネットワークを確認して更新してください。",
+        humidity: "湿度",
+        wind: "風"
+      }
+    };
+
+    let currentLanguage = "en";
+
+    function t(key) {
+      const dict = i18n[currentLanguage] || i18n.en;
+      return dict[key] || i18n.en[key] || key;
+    }
+
+    const weatherCodeMap = {
+      0: "☀",
+      1: "⛅",
+      2: "⛅",
+      3: "☁",
+      45: "🌫",
+      48: "🌫",
+      51: "🌦",
+      53: "🌦",
+      55: "🌧",
+      56: "🌧",
+      57: "🌧",
+      61: "🌧",
+      63: "🌧",
+      65: "⛈",
+      66: "🌧",
+      67: "⛈",
+      71: "🌨",
+      73: "🌨",
+      75: "❄",
+      77: "❄",
+      80: "🌦",
+      81: "🌧",
+      82: "⛈",
+      85: "🌨",
+      86: "❄",
+      95: "⛈",
+      96: "⛈",
+      99: "⛈"
+    };
+
+    function applyTheme(theme) {
+      document.body.dataset.theme = theme;
+      localStorage.setItem("theme-preference", theme);
+      const button = document.getElementById("theme-toggle");
+      const isLight = theme === "light";
+      button.textContent = isLight ? "◑" : "◐";
+      button.setAttribute("aria-label", isLight ? "toggle dark mode" : "toggle bright mode");
+      button.setAttribute("title", isLight ? "toggle dark mode" : "toggle bright mode");
+    }
+
+    function setupThemeToggle() {
+      const savedTheme = localStorage.getItem("theme-preference");
+      const preferredTheme = savedTheme || "dark";
+      applyTheme(preferredTheme);
+
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        const nextTheme = document.body.dataset.theme === "light" ? "dark" : "light";
+        applyTheme(nextTheme);
+      });
+    }
+
+    function applyLanguage(lang) {
+      currentLanguage = i18n[lang] ? lang : "en";
+      localStorage.setItem("language-preference", currentLanguage);
+
+      document.querySelectorAll(".lang-button").forEach((button) => {
+        const selected = button.dataset.lang === currentLanguage;
+        button.setAttribute("aria-pressed", selected ? "true" : "false");
+      });
+
+      document.getElementById("days").nextElementSibling.textContent = t("days");
+      document.getElementById("hours").nextElementSibling.textContent = t("hours");
+      document.getElementById("minutes").nextElementSibling.textContent = t("minutes");
+      document.getElementById("seconds").nextElementSibling.textContent = t("seconds");
+
+      document.documentElement.lang = currentLanguage;
+      renderLocations();
+      loadWeather();
+    }
+
+    function setupLanguageSelector() {
+      const savedLanguage = localStorage.getItem("language-preference") || "en";
+      document.querySelectorAll(".lang-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          applyLanguage(button.dataset.lang);
+        });
+      });
+      applyLanguage(savedLanguage);
+    }
+
+    function pad(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function updateCountdown() {
+      const now = new Date();
+      const distance = targetDate.getTime() - now.getTime();
+      const safeDistance = Math.max(distance, 0);
+
+      const days = Math.floor(safeDistance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((safeDistance / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((safeDistance / (1000 * 60)) % 60);
+      const seconds = Math.floor((safeDistance / 1000) % 60);
+
+      document.getElementById("days").textContent = String(days);
+      document.getElementById("hours").textContent = pad(hours);
+      document.getElementById("minutes").textContent = pad(minutes);
+      document.getElementById("seconds").textContent = pad(seconds);
+
+      const endOfDay = new Date(now);
+      endOfDay.setHours(23, 59, 59, 999);
+      const dayLeftMs = endOfDay.getTime() - now.getTime();
+      const dayLeftHours = Math.floor(dayLeftMs / (1000 * 60 * 60));
+      const dayLeftMinutes = Math.floor((dayLeftMs / (1000 * 60)) % 60);
+      document.getElementById("today-progress").textContent =
+        pad(dayLeftHours) + "h " + pad(dayLeftMinutes) + "m left today";
+    }
+
+    function renderLocations() {
+      const locationGrid = document.getElementById("location-grid");
+      locationGrid.innerHTML = locations.map((location) => {
+        return `
+          <article class="location-card" id="location-${location.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]+/g, "-")}">
+            <div class="location-header">
+              <div>
+                <h3 class="city-name">${location.name}</h3>
+                <div class="city-meta">${location.meta}</div>
+              </div>
+              <span class="weather-status" aria-label="${t("loadingWeather")}">◌</span>
+            </div>
+            <div class="city-time"></div>
+            <div class="city-date"></div>
+            <p class="weather-temp">--°C</p>
+            <p class="weather-details">${t("fetchingWeather").replace("{city}", location.city)}</p>
+          </article>
+        `;
+      }).join("");
+
+      updateLocationTimes();
+    }
+
+    function updateLocationTimes() {
+      locations.forEach((location) => {
+        const card = document.getElementById("location-" + location.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]+/g, "-"));
+        if (!card) {
+          return;
+        }
+
+        const time = new Intl.DateTimeFormat("en-GB", {
+          timeZone: location.zone,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        }).format(new Date());
+
+        const date = new Intl.DateTimeFormat("en-US", {
+          timeZone: location.zone,
+          weekday: "long",
+          month: "long",
+          day: "numeric"
+        }).format(new Date());
+
+        card.querySelector(".city-time").textContent = time;
+        card.querySelector(".city-date").textContent = date;
+      });
+    }
+
+    function pickDailyQuote() {
+      const now = new Date();
+      const seed = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 86400000;
+      const quote = entrepreneurQuotes[seed % entrepreneurQuotes.length];
+      document.getElementById("quote-text").textContent = quote.text;
+      document.getElementById("quote-author").textContent = quote.author;
+      document.getElementById("quote-note").textContent = quote.note;
+    }
+
+    async function loadWeather() {
+      await Promise.all(locations.map(async (location) => {
+        const cardId = "location-" + location.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]+/g, "-");
+        const card = document.getElementById(cardId);
+        const status = card.querySelector(".weather-status");
+        const temp = card.querySelector(".weather-temp");
+        const details = card.querySelector(".weather-details");
+
+        try {
+          const url = new URL("https://api.open-meteo.com/v1/forecast");
+          url.searchParams.set("latitude", location.latitude);
+          url.searchParams.set("longitude", location.longitude);
+          url.searchParams.set("current", "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m");
+          url.searchParams.set("timezone", "auto");
+
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error("Weather request failed");
+          }
+
+          const data = await response.json();
+          const current = data.current;
+          const weatherLabel = weatherCodeMap[current.weather_code] || "•";
+
+          status.textContent = weatherLabel;
+          status.setAttribute("aria-label", t("weatherSymbol").replace("{symbol}", weatherLabel));
+          temp.textContent = Math.round(current.temperature_2m) + "°C";
+          details.textContent =
+            t("humidity") + " " + current.relative_humidity_2m + "% • " + t("wind") + " " +
+            Math.round(current.wind_speed_10m) + " km/h • " + location.city;
+        } catch (error) {
+          status.textContent = "·";
+          status.setAttribute("aria-label", t("weatherUnavailable"));
+          temp.textContent = "--°C";
+          details.textContent = t("weatherUnavailableMsg");
+        }
+      }));
+    }
+
+    function init() {
+      setupThemeToggle();
+      setupLanguageSelector();
+      updateCountdown();
+      pickDailyQuote();
+
+      setInterval(updateCountdown, 1000);
+      setInterval(updateLocationTimes, 1000);
+    }
+
+    init();
+  </script>
+</body>
+</html>
