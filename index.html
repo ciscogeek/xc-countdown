@@ -557,7 +557,9 @@
       {
         text: "Most things still remain to be done. A glorious future!",
         author: "Ingvar Kamprad",
-        note: "IKEA founder"
+        note: "IKEA founder",
+        originalLang: "sv",
+        originalText: "Det mesta är ännu ogjort. Underbara framtid!"
       },
       {
         text: "When something is important enough, you do it even if the odds are not in your favor.",
@@ -702,7 +704,72 @@
       {
         text: "Fall seven times and stand up eight.",
         author: "Japanese proverb",
-        note: "entrepreneurial mindset"
+        note: "entrepreneurial mindset",
+        originalLang: "ja",
+        originalText: "七転び八起き。"
+      },
+      {
+        text: "Only those who sleep make no mistakes.",
+        author: "Ingvar Kamprad",
+        note: "IKEA founder",
+        originalLang: "sv",
+        originalText: "Bara den som sover gör inga misstag."
+      },
+      {
+        text: "Simplicity and common sense should characterize planning and strategic direction.",
+        author: "Ingvar Kamprad",
+        note: "IKEA founder",
+        originalLang: "sv",
+        originalText: "Enkelhet och sunt förnuft ska prägla planering och strategisk inriktning."
+      },
+      {
+        text: "Most things remain to be done. A wonderful future.",
+        author: "Ingvar Kamprad",
+        note: "IKEA founder",
+        originalLang: "sv",
+        originalText: "Det mesta återstår att göra. En underbar framtid."
+      },
+      {
+        text: "Today is cruel, tomorrow is crueler, but the day after tomorrow is beautiful.",
+        author: "Jack Ma",
+        note: "Alibaba co-founder",
+        originalLang: "zh",
+        originalText: "今天很残酷，明天更残酷，后天很美好。"
+      },
+      {
+        text: "If there is no way out, then make one.",
+        author: "Ren Zhengfei",
+        note: "Huawei founder",
+        originalLang: "zh",
+        originalText: "没有退路就是最好的出路。"
+      },
+      {
+        text: "Standing at the center of a strong trend, even a pig can fly.",
+        author: "Lei Jun",
+        note: "Xiaomi founder",
+        originalLang: "zh",
+        originalText: "站在风口上，猪都能飞起来。"
+      },
+      {
+        text: "No challenge, no growth.",
+        author: "Soichiro Honda",
+        note: "Honda founder",
+        originalLang: "ja",
+        originalText: "チャレンジしてこそ成長がある。"
+      },
+      {
+        text: "Life is one chance.",
+        author: "Masayoshi Son",
+        note: "SoftBank founder",
+        originalLang: "ja",
+        originalText: "人生は一度きり。"
+      },
+      {
+        text: "Work results are determined by attitude, enthusiasm, and ability, in that order.",
+        author: "Kazuo Inamori",
+        note: "Kyocera founder",
+        originalLang: "ja",
+        originalText: "仕事の結果は、考え方×熱意×能力で決まる。"
       }
     ];
 
@@ -809,12 +876,18 @@
     };
 
     function getLocalizedQuoteText(index) {
-      if (currentLanguage === "en") {
-        return entrepreneurQuotes[index].text;
+      const quote = entrepreneurQuotes[index];
+      if (quote && quote.originalLang === currentLanguage && quote.originalText) {
+        return quote.originalText;
       }
+
+      if (currentLanguage === "en") {
+        return quote.text;
+      }
+
       const list = quoteTranslations[currentLanguage];
       if (!list || !list[index]) {
-        return entrepreneurQuotes[index].text;
+        return quote.text;
       }
       return list[index];
     }
