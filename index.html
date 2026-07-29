@@ -566,37 +566,109 @@
     const locations = [
       {
         name: "Shanghai",
+        nameI18n: {
+          en: "Shanghai",
+          sv: "Shanghai",
+          zh: "上海",
+          ja: "上海"
+        },
         flag: "🇨🇳",
         zone: "Asia/Shanghai",
         meta: "China standard time",
+        metaI18n: {
+          en: "China standard time",
+          sv: "kinesisk normaltid",
+          zh: "中国标准时间",
+          ja: "中国標準時"
+        },
         city: "Shanghai",
+        cityI18n: {
+          en: "Shanghai",
+          sv: "Shanghai",
+          zh: "上海",
+          ja: "上海"
+        },
         latitude: 31.2304,
         longitude: 121.4737
       },
       {
         name: "Malmö",
+        nameI18n: {
+          en: "Malmö",
+          sv: "Malmö",
+          zh: "马尔默",
+          ja: "マルメ"
+        },
         flag: "🇸🇪",
         zone: "Europe/Amsterdam",
         meta: "Central European time",
+        metaI18n: {
+          en: "Central European time",
+          sv: "centraleuropeisk tid",
+          zh: "中欧时间",
+          ja: "中央ヨーロッパ時間"
+        },
         city: "Malmö",
+        cityI18n: {
+          en: "Malmö",
+          sv: "Malmö",
+          zh: "马尔默",
+          ja: "マルメ"
+        },
         latitude: 55.605,
         longitude: 13.0038
       },
       {
         name: "New York",
+        nameI18n: {
+          en: "New York",
+          sv: "New York",
+          zh: "纽约",
+          ja: "ニューヨーク"
+        },
         flag: "🇺🇸",
         zone: "America/New_York",
         meta: "Eastern time",
+        metaI18n: {
+          en: "Eastern time",
+          sv: "ostkusttid",
+          zh: "美国东部时间",
+          ja: "米国東部時間"
+        },
         city: "New York City",
+        cityI18n: {
+          en: "New York City",
+          sv: "New York",
+          zh: "纽约",
+          ja: "ニューヨーク"
+        },
         latitude: 40.7128,
         longitude: -74.006
       },
       {
         name: "California",
+        nameI18n: {
+          en: "California",
+          sv: "Kalifornien",
+          zh: "加利福尼亚",
+          ja: "カリフォルニア"
+        },
         flag: "🇺🇸",
         zone: "America/Los_Angeles",
         meta: "Pacific time",
+        metaI18n: {
+          en: "Pacific time",
+          sv: "stillahavstid",
+          zh: "太平洋时间",
+          ja: "太平洋時間"
+        },
         city: "Los Angeles",
+        cityI18n: {
+          en: "Los Angeles",
+          sv: "Los Angeles",
+          zh: "洛杉矶",
+          ja: "ロサンゼルス"
+        },
         latitude: 34.0522,
         longitude: -118.2437
       }
@@ -605,37 +677,109 @@
     const rotatingLocations = [
       {
         name: "Tokyo",
+        nameI18n: {
+          en: "Tokyo",
+          sv: "Tokyo",
+          zh: "东京",
+          ja: "東京"
+        },
         flag: "🇯🇵",
         zone: "Asia/Tokyo",
         meta: "Japan standard time",
+        metaI18n: {
+          en: "Japan standard time",
+          sv: "japansk normaltid",
+          zh: "日本标准时间",
+          ja: "日本標準時"
+        },
         city: "Tokyo",
+        cityI18n: {
+          en: "Tokyo",
+          sv: "Tokyo",
+          zh: "东京",
+          ja: "東京"
+        },
         latitude: 35.6762,
         longitude: 139.6503
       },
       {
         name: "Delft",
+        nameI18n: {
+          en: "Delft",
+          sv: "Delft",
+          zh: "代尔夫特",
+          ja: "デルフト"
+        },
         flag: "🇳🇱",
         zone: "Europe/Amsterdam",
         meta: "Central European time",
+        metaI18n: {
+          en: "Central European time",
+          sv: "centraleuropeisk tid",
+          zh: "中欧时间",
+          ja: "中央ヨーロッパ時間"
+        },
         city: "Delft",
+        cityI18n: {
+          en: "Delft",
+          sv: "Delft",
+          zh: "代尔夫特",
+          ja: "デルフト"
+        },
         latitude: 52.0116,
         longitude: 4.3571
       },
       {
         name: "New Delhi",
+        nameI18n: {
+          en: "New Delhi",
+          sv: "New Delhi",
+          zh: "新德里",
+          ja: "ニューデリー"
+        },
         flag: "🇮🇳",
         zone: "Asia/Kolkata",
         meta: "India standard time",
+        metaI18n: {
+          en: "India standard time",
+          sv: "indisk normaltid",
+          zh: "印度标准时间",
+          ja: "インド標準時"
+        },
         city: "New Delhi",
+        cityI18n: {
+          en: "New Delhi",
+          sv: "New Delhi",
+          zh: "新德里",
+          ja: "ニューデリー"
+        },
         latitude: 28.6139,
         longitude: 77.209
       },
       {
         name: "San Francisco",
+        nameI18n: {
+          en: "San Francisco",
+          sv: "San Francisco",
+          zh: "旧金山",
+          ja: "サンフランシスコ"
+        },
         flag: "🇺🇸",
         zone: "America/Los_Angeles",
         meta: "Pacific time",
+        metaI18n: {
+          en: "Pacific time",
+          sv: "stillahavstid",
+          zh: "太平洋时间",
+          ja: "太平洋時間"
+        },
         city: "San Francisco",
+        cityI18n: {
+          en: "San Francisco",
+          sv: "San Francisco",
+          zh: "旧金山",
+          ja: "サンフランシスコ"
+        },
         latitude: 37.7749,
         longitude: -122.4194
       }
@@ -1196,13 +1340,31 @@
       return "location-" + location.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]+/g, "-");
     }
 
+    function getLocationText(location, key) {
+      const localized = location[key + "I18n"];
+      if (localized && localized[currentLanguage]) {
+        return localized[currentLanguage];
+      }
+      return location[key];
+    }
+
+    function getDateLocale() {
+      const localeMap = {
+        en: "en-US",
+        sv: "sv-SE",
+        zh: "zh-CN",
+        ja: "ja-JP"
+      };
+      return localeMap[currentLanguage] || "en-US";
+    }
+
     function getLocationCardMarkup(location, index) {
       return `
         <article class="location-card" id="${getLocationCardId(location, index)}">
           <div class="location-header">
             <div>
-              <h3 class="city-name"><span class="city-flag" aria-hidden="true">${location.flag || ""}</span>${location.name}</h3>
-              <div class="city-meta">${location.meta}</div>
+              <h3 class="city-name"><span class="city-flag" aria-hidden="true">${location.flag || ""}</span>${getLocationText(location, "name")}</h3>
+              <div class="city-meta">${getLocationText(location, "meta")}</div>
             </div>
             <div class="location-actions">
               <span class="weather-status" aria-label="${t("loadingWeather")}">◌</span>
@@ -1211,7 +1373,7 @@
           <div class="city-time"></div>
           <div class="city-date"></div>
           <p class="weather-temp">--°C</p>
-          <p class="weather-details">${t("fetchingWeather").replace("{city}", location.city)}</p>
+          <p class="weather-details">${t("fetchingWeather").replace("{city}", getLocationText(location, "city"))}</p>
           ${index === 3 ? getFourthPanelPinButtonMarkup() : ""}
         </article>
       `;
@@ -1267,7 +1429,7 @@
           hour12: false
         }).format(new Date());
 
-        const date = new Intl.DateTimeFormat("en-US", {
+        const localizedDate = new Intl.DateTimeFormat(getDateLocale(), {
           timeZone: location.zone,
           weekday: "long",
           month: "long",
@@ -1275,7 +1437,7 @@
         }).format(new Date());
 
         card.querySelector(".city-time").textContent = time;
-        card.querySelector(".city-date").textContent = date;
+        card.querySelector(".city-date").textContent = localizedDate;
       });
     }
 
@@ -1323,7 +1485,7 @@
           temp.textContent = Math.round(current.temperature_2m) + "°C";
           details.textContent =
             t("humidity") + " " + current.relative_humidity_2m + "% • " + t("wind") + " " +
-            Math.round(current.wind_speed_10m) + " km/h • " + location.city;
+            Math.round(current.wind_speed_10m) + " km/h • " + getLocationText(location, "city");
         } catch (error) {
           status.textContent = "·";
           status.setAttribute("aria-label", t("weatherUnavailable"));
