@@ -245,6 +245,12 @@
       font-size: 1.05rem;
     }
 
+    .city-flag {
+      font-size: 0.95em;
+      margin-right: 0.45rem;
+      vertical-align: baseline;
+    }
+
     .city-meta {
       margin-top: 0.3rem;
       color: var(--muted);
@@ -516,6 +522,7 @@
     const locations = [
       {
         name: "Shanghai",
+        flag: "🇨🇳",
         zone: "Asia/Shanghai",
         meta: "China standard time",
         city: "Shanghai",
@@ -524,6 +531,7 @@
       },
       {
         name: "Malmö",
+        flag: "🇸🇪",
         zone: "Europe/Amsterdam",
         meta: "Central European time",
         city: "Malmö",
@@ -532,6 +540,7 @@
       },
       {
         name: "New York",
+        flag: "🇺🇸",
         zone: "America/New_York",
         meta: "Eastern time",
         city: "New York City",
@@ -540,6 +549,7 @@
       },
       {
         name: "California",
+        flag: "🇺🇸",
         zone: "America/Los_Angeles",
         meta: "Pacific time",
         city: "Los Angeles",
@@ -547,6 +557,47 @@
         longitude: -118.2437
       }
     ];
+
+    const rotatingLocations = [
+      {
+        name: "Tokyo",
+        flag: "🇯🇵",
+        zone: "Asia/Tokyo",
+        meta: "Japan standard time",
+        city: "Tokyo",
+        latitude: 35.6762,
+        longitude: 139.6503
+      },
+      {
+        name: "Delft",
+        flag: "🇳🇱",
+        zone: "Europe/Amsterdam",
+        meta: "Central European time",
+        city: "Delft",
+        latitude: 52.0116,
+        longitude: 4.3571
+      },
+      {
+        name: "New Delhi",
+        flag: "🇮🇳",
+        zone: "Asia/Kolkata",
+        meta: "India standard time",
+        city: "New Delhi",
+        latitude: 28.6139,
+        longitude: 77.209
+      },
+      {
+        name: "San Francisco",
+        flag: "🇺🇸",
+        zone: "America/Los_Angeles",
+        meta: "Pacific time",
+        city: "San Francisco",
+        latitude: 37.7749,
+        longitude: -122.4194
+      }
+    ];
+
+    let rotatingLocationIndex = 0;
 
     const entrepreneurQuotes = [
       {
@@ -895,6 +946,8 @@
     const i18n = {
       en: {
         pageTitle: "time remaining",
+        pageTitleCountdown: "time remaining",
+        pageTitleCountup: "extra time",
         days: "days",
         hours: "hours",
         minutes: "minutes",
@@ -908,7 +961,9 @@
         wind: "wind"
       },
       sv: {
-        pageTitle: "återstående tid",
+        pageTitle: "aterstaende tid",
+        pageTitleCountdown: "aterstaende tid",
+        pageTitleCountup: "extra tid",
         days: "dagar",
         hours: "timmar",
         minutes: "minuter",
@@ -923,6 +978,8 @@
       },
       zh: {
         pageTitle: "剩余时间",
+        pageTitleCountdown: "剩余时间",
+        pageTitleCountup: "额外时间",
         days: "天",
         hours: "小时",
         minutes: "分钟",
@@ -937,6 +994,8 @@
       },
       ja: {
         pageTitle: "残り時間",
+        pageTitleCountdown: "残り時間",
+        pageTitleCountup: "延長時間",
         days: "日",
         hours: "時間",
         minutes: "分",
@@ -956,6 +1015,11 @@
     function t(key) {
       const dict = i18n[currentLanguage] || i18n.en;
       return dict[key] || i18n.en[key] || key;
+    }
+
+    function updatePageTitle(distance) {
+      const key = distance >= 0 ? "pageTitleCountdown" : "pageTitleCountup";
+      document.title = t(key);
     }
 
     const weatherCodeMap = {
@@ -1025,7 +1089,8 @@
       document.getElementById("seconds").nextElementSibling.textContent = t("seconds");
 
       document.documentElement.lang = currentLanguage;
-      document.title = t("pageTitle");
+      const distance = targetDate.getTime() - Date.now();
+      updatePageTitle(distance);
       renderLocations();
       loadWeather();
       pickDailyQuote();
@@ -1048,12 +1113,13 @@
     function updateCountdown() {
       const now = new Date();
       const distance = targetDate.getTime() - now.getTime();
-      const safeDistance = Math.max(distance, 0);
+      const activeDistance = distance >= 0 ? distance : Math.abs(distance);
+      updatePageTitle(distance);
 
-      const days = Math.floor(safeDistance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((safeDistance / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((safeDistance / (1000 * 60)) % 60);
-      const seconds = Math.floor((safeDistance / 1000) % 60);
+      const days = Math.floor(activeDistance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((activeDistance / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((activeDistance / (1000 * 60)) % 60);
+      const seconds = Math.floor((activeDistance / 1000) % 60);
 
       document.getElementById("days").textContent = String(days);
       document.getElementById("hours").textContent = pad(hours);
@@ -1071,30 +1137,52 @@
 
     function renderLocations() {
       const locationGrid = document.getElementById("location-grid");
-      locationGrid.innerHTML = locations.map((location) => {
-        return `
-          <article class="location-card" id="location-${location.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]+/g, "-")}">
-            <div class="location-header">
-              <div>
-                <h3 class="city-name">${location.name}</h3>
-                <div class="city-meta">${location.meta}</div>
-              </div>
-              <span class="weather-status" aria-label="${t("loadingWeather")}">◌</span>
-            </div>
-            <div class="city-time"></div>
-            <div class="city-date"></div>
-            <p class="weather-temp">--°C</p>
-            <p class="weather-details">${t("fetchingWeather").replace("{city}", location.city)}</p>
-          </article>
-        `;
+      locationGrid.innerHTML = locations.map((location, index) => {
+        return getLocationCardMarkup(location, index);
       }).join("");
 
       updateLocationTimes();
     }
 
+    function getLocationCardId(location, index) {
+      if (index === 3) {
+        return "location-rotating";
+      }
+      return "location-" + location.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]+/g, "-");
+    }
+
+    function getLocationCardMarkup(location, index) {
+      return `
+        <article class="location-card" id="${getLocationCardId(location, index)}">
+          <div class="location-header">
+            <div>
+              <h3 class="city-name"><span class="city-flag" aria-hidden="true">${location.flag || ""}</span>${location.name}</h3>
+              <div class="city-meta">${location.meta}</div>
+            </div>
+            <span class="weather-status" aria-label="${t("loadingWeather")}">◌</span>
+          </div>
+          <div class="city-time"></div>
+          <div class="city-date"></div>
+          <p class="weather-temp">--°C</p>
+          <p class="weather-details">${t("fetchingWeather").replace("{city}", location.city)}</p>
+        </article>
+      `;
+    }
+
+    function rotateFourthLocation() {
+      rotatingLocationIndex = (rotatingLocationIndex + 1) % rotatingLocations.length;
+      locations[3] = rotatingLocations[rotatingLocationIndex];
+      const card = document.getElementById("location-rotating");
+      if (card) {
+        card.outerHTML = getLocationCardMarkup(locations[3], 3);
+      }
+      updateLocationTimes();
+      loadWeather([3]);
+    }
+
     function updateLocationTimes() {
-      locations.forEach((location) => {
-        const card = document.getElementById("location-" + location.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]+/g, "-"));
+      locations.forEach((location, index) => {
+        const card = document.getElementById(getLocationCardId(location, index));
         if (!card) {
           return;
         }
@@ -1129,10 +1217,15 @@
       document.getElementById("quote-note").textContent = quote.note;
     }
 
-    async function loadWeather() {
-      await Promise.all(locations.map(async (location) => {
-        const cardId = "location-" + location.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]+/g, "-");
+    async function loadWeather(indexes) {
+      const targetIndexes = Array.isArray(indexes) ? indexes : locations.map((_, index) => index);
+      await Promise.all(targetIndexes.map(async (index) => {
+        const location = locations[index];
+        const cardId = getLocationCardId(location, index);
         const card = document.getElementById(cardId);
+        if (!card) {
+          return;
+        }
         const status = card.querySelector(".weather-status");
         const temp = card.querySelector(".weather-temp");
         const details = card.querySelector(".weather-details");
@@ -1169,6 +1262,7 @@
     }
 
     function init() {
+      locations[3] = rotatingLocations[0];
       setupThemeToggle();
       setupLanguageSelector();
       updateCountdown();
@@ -1176,6 +1270,7 @@
 
       setInterval(updateCountdown, 1000);
       setInterval(updateLocationTimes, 1000);
+      setInterval(rotateFourthLocation, 3000);
     }
 
     init();
