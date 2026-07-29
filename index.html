@@ -233,11 +233,21 @@
       padding: 1rem;
     }
 
+    .location-card {
+      position: relative;
+    }
+
     .location-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 0.8rem;
+    }
+
+    .location-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
     }
 
     .city-name {
@@ -275,6 +285,40 @@
       color: var(--accent-warm);
       font-size: 1.4rem;
       line-height: 1;
+    }
+
+    .pin-toggle {
+      width: 1.55rem;
+      height: 1.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      font-size: 0.78rem;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .pin-toggle.floating {
+      position: absolute;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      z-index: 2;
+    }
+
+    .pin-toggle:hover {
+      transform: translateY(-1px);
+      border-color: var(--line);
+      background: rgba(80, 250, 123, 0.12);
+    }
+
+    .pin-toggle[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: rgba(80, 250, 123, 0.18);
     }
 
     .weather-temp {
@@ -598,6 +642,7 @@
     ];
 
     let rotatingLocationIndex = 0;
+    let isFourthPanelPinned = false;
 
     const entrepreneurQuotes = [
       {
@@ -1159,17 +1204,29 @@
               <h3 class="city-name"><span class="city-flag" aria-hidden="true">${location.flag || ""}</span>${location.name}</h3>
               <div class="city-meta">${location.meta}</div>
             </div>
-            <span class="weather-status" aria-label="${t("loadingWeather")}">◌</span>
+            <div class="location-actions">
+              <span class="weather-status" aria-label="${t("loadingWeather")}">◌</span>
+            </div>
           </div>
           <div class="city-time"></div>
           <div class="city-date"></div>
           <p class="weather-temp">--°C</p>
           <p class="weather-details">${t("fetchingWeather").replace("{city}", location.city)}</p>
+          ${index === 3 ? getFourthPanelPinButtonMarkup() : ""}
         </article>
       `;
     }
 
+    function getFourthPanelPinButtonMarkup() {
+      const title = isFourthPanelPinned ? "unpin city" : "pin city";
+      const icon = isFourthPanelPinned ? "📌" : "📍";
+      return `<button class="pin-toggle floating" type="button" data-action="toggle-fourth-pin" aria-label="${title}" title="${title}" aria-pressed="${isFourthPanelPinned ? "true" : "false"}">${icon}</button>`;
+    }
+
     function rotateFourthLocation() {
+      if (isFourthPanelPinned) {
+        return;
+      }
       rotatingLocationIndex = (rotatingLocationIndex + 1) % rotatingLocations.length;
       locations[3] = rotatingLocations[rotatingLocationIndex];
       const card = document.getElementById("location-rotating");
@@ -1178,6 +1235,21 @@
       }
       updateLocationTimes();
       loadWeather([3]);
+    }
+
+    function setupRotatingPanelPinToggle() {
+      const grid = document.getElementById("location-grid");
+      grid.addEventListener("click", (event) => {
+        const button = event.target.closest(".pin-toggle");
+        if (!button) {
+          return;
+        }
+        isFourthPanelPinned = !isFourthPanelPinned;
+        button.setAttribute("aria-pressed", isFourthPanelPinned ? "true" : "false");
+        button.setAttribute("aria-label", isFourthPanelPinned ? "unpin city" : "pin city");
+        button.setAttribute("title", isFourthPanelPinned ? "unpin city" : "pin city");
+        button.textContent = isFourthPanelPinned ? "📌" : "📍";
+      });
     }
 
     function updateLocationTimes() {
@@ -1264,6 +1336,7 @@
     function init() {
       locations[3] = rotatingLocations[0];
       setupThemeToggle();
+      setupRotatingPanelPinToggle();
       setupLanguageSelector();
       updateCountdown();
       pickDailyQuote();
