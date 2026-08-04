@@ -108,7 +108,27 @@
 
     .hero-top {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .hero-title-wrap {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .hero-tools,
+    .section-tools {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-tools {
+      width: 100%;
       justify-content: flex-end;
+      margin-bottom: 0.7rem;
     }
 
     .theme-toggle {
@@ -133,6 +153,36 @@
       border-color: var(--line);
     }
 
+    .section-toggle {
+      min-width: 2rem;
+      height: 2rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(80, 250, 123, 0.08);
+      color: var(--accent);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      line-height: 1;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .section-toggle:hover {
+      transform: translateY(-1px);
+      background: rgba(80, 250, 123, 0.14);
+      border-color: var(--line);
+    }
+
+    .section-content[hidden] {
+      display: none;
+    }
+
+    #content-countdown {
+      margin-top: 1rem;
+    }
+
     .meta-row {
       display: none;
     }
@@ -150,6 +200,14 @@
       display: grid;
       grid-template-columns: minmax(220px, 1.45fr) repeat(3, minmax(140px, 1fr));
       gap: 1rem;
+    }
+
+    .countdown-title {
+      margin: 0;
+      font-size: clamp(1.25rem, 2.2vw, 1.65rem);
+      line-height: 1.2;
+      letter-spacing: 0.02em;
+      color: var(--text);
     }
 
     .digit-card {
@@ -509,45 +567,63 @@
 </head>
 <body>
   <main class="page">
-    <section class="hero fade-up">
+    <section class="hero fade-up" id="section-countdown">
       <div class="hero-top">
-        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="toggle bright mode" title="toggle bright mode">◐</button>
+        <div class="hero-title-wrap">
+          <h1 class="countdown-title">Carpe diem</h1>
+        </div>
+        <div class="hero-tools">
+          <button class="section-toggle" type="button" data-section-id="section-countdown" data-content-id="content-countdown" data-section-key="sectionCountdown" aria-expanded="true" aria-label="collapse countdown" title="collapse countdown">−</button>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="toggle bright mode" title="toggle bright mode">◐</button>
+        </div>
       </div>
-      <div class="meta-row">
-        <div class="pill" id="today-progress">loading today progress...</div>
-      </div>
-      <div class="digits" id="countdown-digits">
-        <article class="digit-card days-card">
-          <div class="digit-value" id="days">0</div>
-          <div class="digit-label">days</div>
-        </article>
-        <article class="digit-card">
-          <div class="digit-value" id="hours">0</div>
-          <div class="digit-label">hours</div>
-        </article>
-        <article class="digit-card">
-          <div class="digit-value" id="minutes">0</div>
-          <div class="digit-label">minutes</div>
-        </article>
-        <article class="digit-card">
-          <div class="digit-value" id="seconds">0</div>
-          <div class="digit-label">seconds</div>
-        </article>
+      <div class="section-content" id="content-countdown">
+        <div class="meta-row">
+          <div class="pill" id="today-progress">loading today progress...</div>
+        </div>
+        <div class="digits" id="countdown-digits">
+          <article class="digit-card days-card">
+            <div class="digit-value" id="days">0</div>
+            <div class="digit-label">days</div>
+          </article>
+          <article class="digit-card">
+            <div class="digit-value" id="hours">0</div>
+            <div class="digit-label">hours</div>
+          </article>
+          <article class="digit-card">
+            <div class="digit-value" id="minutes">0</div>
+            <div class="digit-label">minutes</div>
+          </article>
+          <article class="digit-card">
+            <div class="digit-value" id="seconds">0</div>
+            <div class="digit-label">seconds</div>
+          </article>
+        </div>
       </div>
     </section>
 
-    <section class="grid">
+    <section class="grid" id="section-locations">
       <div class="panel fade-up delay-1">
-        <div class="location-grid" id="location-grid"></div>
+        <div class="section-tools">
+          <button class="section-toggle" type="button" data-section-id="section-locations" data-content-id="content-locations" data-section-key="sectionLocations" aria-expanded="true" aria-label="collapse locations" title="collapse locations">−</button>
+        </div>
+        <div class="section-content" id="content-locations">
+          <div class="location-grid" id="location-grid"></div>
+        </div>
       </div>
     </section>
 
-    <section class="quote-card fade-up delay-3">
-      <div class="quote-layout">
-        <div class="quote-content">
-          <blockquote id="quote-text"></blockquote>
-          <div class="quote-author" id="quote-author"></div>
-          <div class="quote-note" id="quote-note"></div>
+    <section class="quote-card fade-up delay-3" id="section-quote">
+      <div class="section-tools">
+        <button class="section-toggle" type="button" data-section-id="section-quote" data-content-id="content-quote" data-section-key="sectionQuote" aria-expanded="true" aria-label="collapse quote" title="collapse quote">−</button>
+      </div>
+      <div class="section-content" id="content-quote">
+        <div class="quote-layout">
+          <div class="quote-content">
+            <blockquote id="quote-text"></blockquote>
+            <div class="quote-author" id="quote-author"></div>
+            <div class="quote-note" id="quote-note"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -782,6 +858,33 @@
         },
         latitude: 37.7749,
         longitude: -122.4194
+      },
+      {
+        name: "London",
+        nameI18n: {
+          en: "London",
+          sv: "London",
+          zh: "伦敦",
+          ja: "ロンドン"
+        },
+        flag: "🇬🇧",
+        zone: "Europe/London",
+        meta: "United Kingdom time",
+        metaI18n: {
+          en: "United Kingdom time",
+          sv: "brittisk tid",
+          zh: "英国时间",
+          ja: "英国時間"
+        },
+        city: "London",
+        cityI18n: {
+          en: "London",
+          sv: "London",
+          zh: "伦敦",
+          ja: "ロンドン"
+        },
+        latitude: 51.5072,
+        longitude: -0.1276
       }
     ];
 
@@ -1147,7 +1250,12 @@
         weatherUnavailable: "weather unavailable",
         weatherUnavailableMsg: "unable to load weather right now. check network access and refresh.",
         humidity: "humidity",
-        wind: "wind"
+        wind: "wind",
+        collapseSection: "collapse",
+        expandSection: "expand",
+        sectionCountdown: "countdown",
+        sectionLocations: "locations",
+        sectionQuote: "quote"
       },
       sv: {
         pageTitle: "aterstaende tid",
@@ -1163,7 +1271,12 @@
         weatherUnavailable: "väder saknas",
         weatherUnavailableMsg: "kunde inte hämta väder nu. kontrollera nätverket och uppdatera.",
         humidity: "luftfuktighet",
-        wind: "vind"
+        wind: "vind",
+        collapseSection: "fall ihop",
+        expandSection: "veckla ut",
+        sectionCountdown: "nedrakning",
+        sectionLocations: "platser",
+        sectionQuote: "citat"
       },
       zh: {
         pageTitle: "剩余时间",
@@ -1179,7 +1292,12 @@
         weatherUnavailable: "天气不可用",
         weatherUnavailableMsg: "暂时无法获取天气，请检查网络后刷新。",
         humidity: "湿度",
-        wind: "风速"
+        wind: "风速",
+        collapseSection: "收起",
+        expandSection: "展开",
+        sectionCountdown: "倒计时",
+        sectionLocations: "地点",
+        sectionQuote: "语录"
       },
       ja: {
         pageTitle: "残り時間",
@@ -1195,7 +1313,12 @@
         weatherUnavailable: "天気データなし",
         weatherUnavailableMsg: "天気を取得できません。ネットワークを確認して更新してください。",
         humidity: "湿度",
-        wind: "風"
+        wind: "風",
+        collapseSection: "折りたたむ",
+        expandSection: "展開",
+        sectionCountdown: "カウントダウン",
+        sectionLocations: "都市",
+        sectionQuote: "引用"
       }
     };
 
@@ -1204,6 +1327,50 @@
     function t(key) {
       const dict = i18n[currentLanguage] || i18n.en;
       return dict[key] || i18n.en[key] || key;
+    }
+
+    function applySectionState(button, collapsed) {
+      const section = document.getElementById(button.dataset.sectionId);
+      const content = document.getElementById(button.dataset.contentId);
+      if (!section || !content) {
+        return;
+      }
+
+      section.classList.toggle("is-collapsed", collapsed);
+      content.hidden = collapsed;
+      button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      button.textContent = collapsed ? "+" : "−";
+
+      const action = collapsed ? t("expandSection") : t("collapseSection");
+      const sectionName = t(button.dataset.sectionKey);
+      const label = action + " " + sectionName;
+      button.setAttribute("aria-label", label);
+      button.setAttribute("title", label);
+    }
+
+    function refreshSectionToggleLabels() {
+      document.querySelectorAll(".section-toggle").forEach((button) => {
+        const collapsed = button.getAttribute("aria-expanded") === "false";
+        applySectionState(button, collapsed);
+      });
+    }
+
+    function setupSectionToggles() {
+      const defaultCollapsed = {
+        "section-countdown": true,
+        "section-locations": false,
+        "section-quote": false
+      };
+
+      document.querySelectorAll(".section-toggle").forEach((button) => {
+        const sectionId = button.dataset.sectionId;
+        applySectionState(button, Boolean(defaultCollapsed[sectionId]));
+
+        button.addEventListener("click", () => {
+          const collapsed = button.getAttribute("aria-expanded") === "false";
+          applySectionState(button, !collapsed);
+        });
+      });
     }
 
     function updatePageTitle(distance) {
@@ -1280,6 +1447,7 @@
       document.documentElement.lang = currentLanguage;
       const distance = targetDate.getTime() - Date.now();
       updatePageTitle(distance);
+      refreshSectionToggleLabels();
       renderLocations();
       loadWeather();
       pickDailyQuote();
@@ -1498,6 +1666,7 @@
     function init() {
       locations[3] = rotatingLocations[0];
       setupThemeToggle();
+      setupSectionToggles();
       setupRotatingPanelPinToggle();
       setupLanguageSelector();
       updateCountdown();
