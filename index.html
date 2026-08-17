@@ -295,6 +295,14 @@
       position: relative;
     }
 
+    .location-card.has-picker {
+      padding-bottom: 3rem;
+    }
+
+    .location-card.has-pin {
+      padding-right: 3rem;
+    }
+
     .location-header {
       display: flex;
       justify-content: space-between;
@@ -391,6 +399,84 @@
       color: var(--muted);
       line-height: 1.7;
       font-size: 0.92rem;
+    }
+
+    .location-picker {
+      position: absolute;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      z-index: 2;
+    }
+
+    .location-picker summary {
+      width: 1.55rem;
+      height: 1.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      font-size: 0.85rem;
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .location-picker summary:hover {
+      transform: translateY(-1px);
+      border-color: var(--line);
+      background: rgba(80, 250, 123, 0.12);
+    }
+
+    .location-picker summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .location-picker summary::before {
+      content: "◎";
+      font-size: 0.9rem;
+      transition: transform 140ms ease;
+    }
+
+    .location-picker[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    .location-options {
+      position: absolute;
+      right: 0;
+      bottom: 2rem;
+      display: grid;
+      gap: 0.38rem;
+      max-height: 9.5rem;
+      overflow-y: auto;
+      padding: 0.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(20, 22, 32, 0.92);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+      min-width: 11.5rem;
+    }
+
+    .location-card.has-pin .location-picker {
+      right: 2.65rem;
+    }
+
+    .location-option {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.25;
+    }
+
+    .location-option input {
+      margin: 0;
+      accent-color: var(--accent);
     }
 
     .quote-card {
@@ -720,33 +806,6 @@
         },
         latitude: 40.7128,
         longitude: -74.006
-      },
-      {
-        name: "California",
-        nameI18n: {
-          en: "California",
-          sv: "Kalifornien",
-          zh: "加利福尼亚",
-          ja: "カリフォルニア"
-        },
-        flag: "🇺🇸",
-        zone: "America/Los_Angeles",
-        meta: "Pacific time",
-        metaI18n: {
-          en: "Pacific time",
-          sv: "stillahavstid",
-          zh: "太平洋时间",
-          ja: "太平洋時間"
-        },
-        city: "Los Angeles",
-        cityI18n: {
-          en: "Los Angeles",
-          sv: "Los Angeles",
-          zh: "洛杉矶",
-          ja: "ロサンゼルス"
-        },
-        latitude: 34.0522,
-        longitude: -118.2437
       }
     ];
 
@@ -917,6 +976,27 @@
 
     let rotatingLocationIndex = 0;
     let isFourthPanelPinned = false;
+
+    function getLocationKey(location) {
+      return (location.zone + "|" + location.city).toLowerCase();
+    }
+
+    const selectionLocationPool = (() => {
+      const byKey = new Map();
+      [
+        locations[1],
+        locations[2],
+        locations[3],
+        ...rotatingLocations
+      ].filter(Boolean).forEach((location) => {
+        byKey.set(getLocationKey(location), location);
+      });
+      return Array.from(byKey.values());
+    })();
+
+    let selectedSecondLocationKey = getLocationKey(locations[1]);
+    let selectedThirdLocationKey = getLocationKey(locations[2]);
+    let selectedRotationLocationKeys = new Set(rotatingLocations.map((location) => getLocationKey(location)));
 
     const entrepreneurQuotes = [
       {
@@ -1309,7 +1389,11 @@
         expandSection: "expand",
         sectionCountdown: "countdown",
         sectionLocations: "locations",
-        sectionQuote: "quote"
+        sectionQuote: "quote",
+        chooseLocation: "choose location",
+        chooseRotation: "choose rotating locations",
+        pinCity: "pin city",
+        unpinCity: "unpin city"
       },
       sv: {
         pageTitle: "aterstaende tid",
@@ -1330,7 +1414,11 @@
         expandSection: "veckla ut",
         sectionCountdown: "nedrakning",
         sectionLocations: "platser",
-        sectionQuote: "citat"
+        sectionQuote: "citat",
+        chooseLocation: "valj plats",
+        chooseRotation: "valj roterande platser",
+        pinCity: "fasta stad",
+        unpinCity: "losa stad"
       },
       zh: {
         pageTitle: "剩余时间",
@@ -1351,7 +1439,11 @@
         expandSection: "展开",
         sectionCountdown: "倒计时",
         sectionLocations: "地点",
-        sectionQuote: "语录"
+        sectionQuote: "语录",
+        chooseLocation: "选择地点",
+        chooseRotation: "选择轮播地点",
+        pinCity: "固定城市",
+        unpinCity: "取消固定城市"
       },
       ja: {
         pageTitle: "残り時間",
@@ -1372,7 +1464,11 @@
         expandSection: "展開",
         sectionCountdown: "カウントダウン",
         sectionLocations: "都市",
-        sectionQuote: "引用"
+        sectionQuote: "引用",
+        chooseLocation: "都市を選ぶ",
+        chooseRotation: "ローテーション地点を選ぶ",
+        pinCity: "都市を固定",
+        unpinCity: "都市の固定を解除"
       }
     };
 
@@ -1559,7 +1655,7 @@
       if (index === 3) {
         return "location-rotating";
       }
-      return "location-" + location.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]+/g, "-");
+      return "location-slot-" + (index + 1);
     }
 
     function getLocationText(location, key) {
@@ -1580,9 +1676,21 @@
       return localeMap[currentLanguage] || "en-US";
     }
 
+    function getAlphabeticalLocations(list) {
+      return [...list].sort((a, b) => {
+        const aName = getLocationText(a, "name");
+        const bName = getLocationText(b, "name");
+        return aName.localeCompare(bName, getDateLocale(), { sensitivity: "base" });
+      });
+    }
+
     function getLocationCardMarkup(location, index) {
+      const hasPicker = index === 1 || index === 2 || index === 3;
+      const hasPin = index === 3;
+      const cardClass = "location-card" + (hasPicker ? " has-picker" : "") + (hasPin ? " has-pin" : "");
+
       return `
-        <article class="location-card" id="${getLocationCardId(location, index)}">
+        <article class="${cardClass}" id="${getLocationCardId(location, index)}">
           <div class="location-header">
             <div>
               <h3 class="city-name"><span class="city-flag" aria-hidden="true">${location.flag || ""}</span>${getLocationText(location, "name")}</h3>
@@ -1596,23 +1704,95 @@
           <div class="city-date"></div>
           <p class="weather-temp">--°C</p>
           <p class="weather-details">${t("fetchingWeather").replace("{city}", getLocationText(location, "city"))}</p>
+          ${index === 1 || index === 2 ? getSingleLocationPickerMarkup(index) : ""}
+          ${index === 3 ? getRotationPickerMarkup() : ""}
           ${index === 3 ? getFourthPanelPinButtonMarkup() : ""}
         </article>
       `;
     }
 
+    function getSingleLocationPickerMarkup(index) {
+      const groupName = index === 1 ? "location-slot-2" : "location-slot-3";
+      const selectedKey = index === 1 ? selectedSecondLocationKey : selectedThirdLocationKey;
+      const options = getAlphabeticalLocations(selectionLocationPool).map((location) => {
+        const key = getLocationKey(location);
+        const checked = key === selectedKey ? " checked" : "";
+        return `
+          <label class="location-option">
+            <input type="radio" name="${groupName}" value="${key}"${checked}>
+            <span>${location.flag || ""} ${getLocationText(location, "name")}</span>
+          </label>
+        `;
+      }).join("");
+
+      return `
+        <details class="location-picker" data-picker="slot-${index}">
+          <summary aria-label="${t("chooseLocation")}" title="${t("chooseLocation")}"></summary>
+          <div class="location-options">${options}</div>
+        </details>
+      `;
+    }
+
+    function getRotationPickerMarkup() {
+      const options = getAlphabeticalLocations(rotatingLocations).map((location) => {
+        const key = getLocationKey(location);
+        const checked = selectedRotationLocationKeys.has(key) ? " checked" : "";
+        return `
+          <label class="location-option">
+            <input type="checkbox" name="location-rotation" value="${key}"${checked}>
+            <span>${location.flag || ""} ${getLocationText(location, "name")}</span>
+          </label>
+        `;
+      }).join("");
+
+      return `
+        <details class="location-picker" data-picker="rotation">
+          <summary aria-label="${t("chooseRotation")}" title="${t("chooseRotation")}"></summary>
+          <div class="location-options">${options}</div>
+        </details>
+      `;
+    }
+
     function getFourthPanelPinButtonMarkup() {
-      const title = isFourthPanelPinned ? "unpin city" : "pin city";
+      const title = isFourthPanelPinned ? t("unpinCity") : t("pinCity");
       const icon = isFourthPanelPinned ? "📌" : "📍";
       return `<button class="pin-toggle floating" type="button" data-action="toggle-fourth-pin" aria-label="${title}" title="${title}" aria-pressed="${isFourthPanelPinned ? "true" : "false"}">${icon}</button>`;
+    }
+
+    function getLocationByKey(key) {
+      return selectionLocationPool.find((location) => getLocationKey(location) === key) || null;
+    }
+
+    function getActiveRotatingLocations() {
+      const active = rotatingLocations.filter((location) => selectedRotationLocationKeys.has(getLocationKey(location)));
+      return active.length > 0 ? active : [rotatingLocations[0]];
+    }
+
+    function isRotationPickerExpanded() {
+      const picker = document.querySelector('#location-rotating details[data-picker="rotation"]');
+      return Boolean(picker && picker.open);
+    }
+
+    function syncFourthLocationWithSelection(forceReset) {
+      const active = getActiveRotatingLocations();
+      const currentKey = locations[3] ? getLocationKey(locations[3]) : "";
+      const existsInActive = active.some((location) => getLocationKey(location) === currentKey);
+      if (!existsInActive || forceReset) {
+        rotatingLocationIndex = 0;
+        locations[3] = active[0];
+      }
     }
 
     function rotateFourthLocation() {
       if (isFourthPanelPinned) {
         return;
       }
-      rotatingLocationIndex = (rotatingLocationIndex + 1) % rotatingLocations.length;
-      locations[3] = rotatingLocations[rotatingLocationIndex];
+      if (isRotationPickerExpanded()) {
+        return;
+      }
+      const activeRotatingLocations = getActiveRotatingLocations();
+      rotatingLocationIndex = (rotatingLocationIndex + 1) % activeRotatingLocations.length;
+      locations[3] = activeRotatingLocations[rotatingLocationIndex];
       const card = document.getElementById("location-rotating");
       if (card) {
         card.outerHTML = getLocationCardMarkup(locations[3], 3);
@@ -1630,16 +1810,77 @@
         }
         isFourthPanelPinned = !isFourthPanelPinned;
         button.setAttribute("aria-pressed", isFourthPanelPinned ? "true" : "false");
-        button.setAttribute("aria-label", isFourthPanelPinned ? "unpin city" : "pin city");
-        button.setAttribute("title", isFourthPanelPinned ? "unpin city" : "pin city");
+        button.setAttribute("aria-label", isFourthPanelPinned ? t("unpinCity") : t("pinCity"));
+        button.setAttribute("title", isFourthPanelPinned ? t("unpinCity") : t("pinCity"));
         button.textContent = isFourthPanelPinned ? "📌" : "📍";
+      });
+
+      grid.addEventListener("change", (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement)) {
+          return;
+        }
+
+        if (input.name === "location-slot-2" || input.name === "location-slot-3") {
+          const selectedLocation = getLocationByKey(input.value);
+          if (!selectedLocation) {
+            return;
+          }
+
+          if (input.name === "location-slot-2") {
+            selectedSecondLocationKey = input.value;
+            locations[1] = selectedLocation;
+          } else {
+            selectedThirdLocationKey = input.value;
+            locations[2] = selectedLocation;
+          }
+
+          renderLocations();
+          loadWeather();
+          return;
+        }
+
+        if (input.name === "location-rotation") {
+          if (input.checked) {
+            selectedRotationLocationKeys.add(input.value);
+          } else {
+            selectedRotationLocationKeys.delete(input.value);
+            if (selectedRotationLocationKeys.size === 0) {
+              selectedRotationLocationKeys.add(input.value);
+              input.checked = true;
+              return;
+            }
+          }
+
+          // Keep the foldout open while selecting multiple locations.
+          if (!isRotationPickerExpanded()) {
+            syncFourthLocationWithSelection(true);
+            renderLocations();
+            loadWeather([3]);
+          }
+        }
       });
     }
 
     function updateLocationTimes() {
+      if (!isRotationPickerExpanded()) {
+        const active = getActiveRotatingLocations();
+        const currentKey = locations[3] ? getLocationKey(locations[3]) : "";
+        const isCurrentActive = active.some((location) => getLocationKey(location) === currentKey);
+        if (!isCurrentActive) {
+          syncFourthLocationWithSelection(true);
+          renderLocations();
+          loadWeather([3]);
+          return;
+        }
+      }
+
       locations.forEach((location, index) => {
         const card = document.getElementById(getLocationCardId(location, index));
         if (!card) {
+          return;
+        }
+        if (index === 3 && isRotationPickerExpanded()) {
           return;
         }
 
@@ -1718,7 +1959,7 @@
     }
 
     function init() {
-      locations[3] = rotatingLocations[0];
+      syncFourthLocationWithSelection(true);
       setupThemeToggle();
       setupSectionToggles();
       setupRotatingPanelPinToggle();
