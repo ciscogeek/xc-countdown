@@ -4,6 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>time remaining</title>
+  <meta name="description" content="Countdown, world clocks with live weather, and a daily entrepreneur quote.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%8F%B3%3C/text%3E%3C/svg%3E">
+  <script>
+    // Apply the saved theme before first paint to avoid a dark-to-light flash.
+    try {
+      if (localStorage.getItem("theme-preference") === "light") {
+        document.documentElement.dataset.theme = "light";
+      }
+    } catch (error) {
+      // storage unavailable; keep the default dark theme
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -23,9 +35,17 @@
       --accent-soft: #8be9fd;
       --accent-warm: #f1fa8c;
       --shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+      --glow-a: rgba(80, 250, 123, 0.1);
+      --glow-b: rgba(139, 233, 253, 0.08);
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --control-bg: rgba(255, 255, 255, 0.05);
+      --control-border: rgba(255, 255, 255, 0.14);
+      --popover-bg: rgba(20, 22, 32, 0.92);
+      --popover-border: rgba(255, 255, 255, 0.08);
+      --popover-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
     }
 
-    body[data-theme="light"] {
+    :root[data-theme="light"] {
       color-scheme: light;
       --bg-start: #f6f7fb;
       --bg-end: #dfe7e1;
@@ -40,6 +60,14 @@
       --accent-soft: #357e95;
       --accent-warm: #7f8c2c;
       --shadow: 0 24px 80px rgba(36, 44, 60, 0.12);
+      --glow-a: rgba(80, 250, 123, 0.12);
+      --glow-b: rgba(98, 114, 164, 0.08);
+      --surface-border: rgba(68, 71, 90, 0.12);
+      --control-bg: rgba(255, 255, 255, 0.7);
+      --control-border: rgba(68, 71, 90, 0.2);
+      --popover-bg: rgba(255, 255, 255, 0.97);
+      --popover-border: rgba(68, 71, 90, 0.16);
+      --popover-shadow: 0 12px 28px rgba(36, 44, 60, 0.16);
     }
 
     * {
@@ -75,13 +103,13 @@
     body::before {
       top: -10rem;
       left: -9rem;
-      background: rgba(80, 250, 123, 0.1);
+      background: var(--glow-a);
     }
 
     body::after {
       right: -10rem;
       bottom: -12rem;
-      background: rgba(139, 233, 253, 0.08);
+      background: var(--glow-b);
     }
 
     .page {
@@ -183,19 +211,6 @@
       margin-top: 1rem;
     }
 
-    .meta-row {
-      display: none;
-    }
-
-    .pill {
-      padding: 0.8rem 1rem;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
     .digits {
       display: grid;
       grid-template-columns: minmax(220px, 1.45fr) repeat(3, minmax(140px, 1fr));
@@ -272,10 +287,6 @@
       letter-spacing: 0.02em;
     }
 
-    .section-subtitle {
-      display: none;
-    }
-
     .location-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -287,7 +298,7 @@
     .quote-card {
       border-radius: 22px;
       background: var(--panel-strong);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--surface-border);
       padding: 1rem;
     }
 
@@ -357,8 +368,8 @@
       width: 1.55rem;
       height: 1.55rem;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--control-border);
+      background: var(--control-bg);
       color: var(--text);
       font-size: 0.78rem;
       line-height: 1;
@@ -412,8 +423,8 @@
       width: 1.55rem;
       height: 1.55rem;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--control-border);
+      background: var(--control-bg);
       color: var(--text);
       font-size: 0.85rem;
       list-style: none;
@@ -455,9 +466,9 @@
       overflow-y: auto;
       padding: 0.5rem;
       border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(20, 22, 32, 0.92);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--popover-border);
+      background: var(--popover-bg);
+      box-shadow: var(--popover-shadow);
       min-width: 11.5rem;
     }
 
@@ -496,8 +507,8 @@
       width: 2.1rem;
       height: 2.1rem;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--control-border);
+      background: var(--control-bg);
       color: var(--text);
       font-size: 1rem;
       line-height: 1;
@@ -601,19 +612,32 @@
     }
 
     @media (max-width: 900px) {
-      .location-grid,
-      .grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
       .digits {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+    }
 
-      .grid {
-        grid-template-columns: 1fr;
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
+        transition-duration: 0.01ms !important;
       }
 
+      .fade-up {
+        opacity: 1;
+        transform: none;
+      }
+
+      .theme-toggle:hover,
+      .section-toggle:hover,
+      .pin-toggle:hover,
+      .lang-button:hover,
+      .location-picker summary:hover {
+        transform: none;
+      }
     }
 
     @media (max-width: 640px) {
@@ -664,9 +688,6 @@
         </div>
       </div>
       <div class="section-content" id="content-countdown">
-        <div class="meta-row">
-          <div class="pill" id="today-progress">loading today progress...</div>
-        </div>
         <div class="digits" id="countdown-digits">
           <article class="digit-card days-card">
             <div class="digit-value" id="days">0</div>
@@ -715,10 +736,11 @@
     </section>
 
     <div class="language-bar" id="language-bar" aria-label="language selector">
-      <button class="lang-button" type="button" data-lang="en" aria-label="english" title="english" aria-pressed="true">🇬🇧</button>
-      <button class="lang-button" type="button" data-lang="sv" aria-label="swedish" title="swedish" aria-pressed="false">🇸🇪</button>
-      <button class="lang-button" type="button" data-lang="zh" aria-label="chinese" title="chinese" aria-pressed="false">🇨🇳</button>
-      <button class="lang-button" type="button" data-lang="ja" aria-label="japanese" title="japanese" aria-pressed="false">🇯🇵</button>
+      <!-- Language names in their own language, so each is recognizable regardless of the current UI language. -->
+      <button class="lang-button" type="button" data-lang="en" lang="en" aria-label="English" title="English" aria-pressed="true">🇬🇧</button>
+      <button class="lang-button" type="button" data-lang="sv" lang="sv" aria-label="Svenska" title="Svenska" aria-pressed="false">🇸🇪</button>
+      <button class="lang-button" type="button" data-lang="zh" lang="zh" aria-label="中文" title="中文" aria-pressed="false">🇨🇳</button>
+      <button class="lang-button" type="button" data-lang="ja" lang="ja" aria-label="日本語" title="日本語" aria-pressed="false">🇯🇵</button>
     </div>
   </main>
 
@@ -762,7 +784,7 @@
           ja: "マルメ"
         },
         flag: "🇸🇪",
-        zone: "Europe/Amsterdam",
+        zone: "Europe/Stockholm",
         meta: "Central European time",
         metaI18n: {
           en: "Central European time",
@@ -998,380 +1020,410 @@
     let selectedThirdLocationKey = getLocationKey(locations[2]);
     let selectedRotationLocationKeys = new Set(rotatingLocations.map((location) => getLocationKey(location)));
 
+    // Each quote carries its own translations; for quotes not originally in English,
+    // the matching i18n entry holds the original wording.
     const entrepreneurQuotes = [
       {
         text: "Innovation distinguishes between a leader and a follower.",
         author: "Steve Jobs",
-        note: "Apple co-founder"
+        note: "Apple co-founder",
+        i18n: {
+          sv: "Innovation skiljer en ledare från en följare.",
+          zh: "创新将领导者与追随者区分开来。",
+          ja: "イノベーションはリーダーとフォロワーを分ける。"
+        }
       },
       {
         text: "Most things still remain to be done. A glorious future!",
         author: "Ingvar Kamprad",
         note: "IKEA founder",
-        originalLang: "sv",
-        originalText: "Det mesta är ännu ogjort. Underbara framtid!"
+        i18n: {
+          sv: "Det mesta är ännu ogjort. Underbara framtid!",
+          zh: "大多数事情仍有待完成。未来光明！",
+          ja: "まだやるべきことはたくさんある。未来は輝いている。"
+        }
       },
       {
         text: "When something is important enough, you do it even if the odds are not in your favor.",
         author: "Elon Musk",
-        note: "Tesla and SpaceX"
+        note: "Tesla and SpaceX",
+        i18n: {
+          sv: "När något är tillräckligt viktigt gör du det även om oddsen är emot dig.",
+          zh: "当一件事足够重要时，即使胜算不大，你也要去做。",
+          ja: "十分に重要なことなら、勝算が低くても実行する。"
+        }
       },
       {
         text: "Embrace what you do naturally, because people will pay for it.",
         author: "Sara Blakely",
-        note: "Spanx founder"
+        note: "Spanx founder",
+        i18n: {
+          sv: "Ta vara på det du gör naturligt, för människor kommer att betala för det.",
+          zh: "发挥你天生擅长的事，因为人们会为此买单。",
+          ja: "自分が自然にできることを伸ばしなさい。人はそこに価値を払う。"
+        }
       },
       {
         text: "Play by the rules, but be ferocious.",
         author: "Phil Knight",
-        note: "Nike co-founder"
+        note: "Nike co-founder",
+        i18n: {
+          sv: "Följ reglerna, men var kompromisslöst stark.",
+          zh: "按规则行事，但要足够勇猛。",
+          ja: "ルールを守りつつ、徹底的に闘え。"
+        }
       },
       {
         text: "I knew that if I failed I would not regret that, but I knew the one thing I might regret is not trying.",
         author: "Jeff Bezos",
-        note: "Amazon founder"
+        note: "Amazon founder",
+        i18n: {
+          sv: "Om jag misslyckades skulle jag inte ångra det, men jag skulle ångra att inte ha försökt.",
+          zh: "如果我失败了我不会后悔，但我会后悔没有尝试。",
+          ja: "失敗は後悔しない。後悔するのは挑戦しないことだ。"
+        }
       },
       {
         text: "Your most unhappy customers are your greatest source of learning.",
         author: "Bill Gates",
-        note: "Microsoft co-founder"
+        note: "Microsoft co-founder",
+        i18n: {
+          sv: "Dina mest missnöjda kunder är din största källa till lärande.",
+          zh: "最不满意的客户是你最重要的学习来源。",
+          ja: "最も不満な顧客こそ、最大の学びの源だ。"
+        }
       },
       {
         text: "If everybody is moving forward together, then success takes care of itself.",
         author: "Henry Ford",
-        note: "Ford founder"
+        note: "Ford founder",
+        i18n: {
+          sv: "Om alla rör sig framåt tillsammans tar framgång hand om sig själv.",
+          zh: "如果每个人都一起向前，成功会自然到来。",
+          ja: "全員が同じ方向に進めば、成功は自然についてくる。"
+        }
       },
       {
         text: "The way to get started is to quit talking and begin doing.",
         author: "Walt Disney",
-        note: "Disney founder"
+        note: "Disney founder",
+        i18n: {
+          sv: "Sättet att komma igång är att sluta prata och börja göra.",
+          zh: "开始的方法就是停止空谈，马上行动。",
+          ja: "始める方法は、話すのをやめて行動することだ。"
+        }
       },
       {
         text: "The biggest risk is not taking any risk.",
         author: "Mark Zuckerberg",
-        note: "Meta founder"
+        note: "Meta founder",
+        i18n: {
+          sv: "Den största risken är att inte ta någon risk alls.",
+          zh: "最大的风险就是不去承担任何风险。",
+          ja: "最大のリスクは、まったくリスクを取らないことだ。"
+        }
       },
       {
         text: "Do not be embarrassed by your failures, learn from them and start again.",
         author: "Richard Branson",
-        note: "Virgin founder"
+        note: "Virgin founder",
+        i18n: {
+          sv: "Skäms inte för dina misslyckanden, lär av dem och börja om.",
+          zh: "不要为失败感到羞愧，从中学习并重新开始。",
+          ja: "失敗を恥じるな。学んで、また始めればいい。"
+        }
       },
       {
         text: "A brand for a company is like a reputation for a person.",
         author: "Jeff Bezos",
-        note: "Amazon founder"
+        note: "Amazon founder",
+        i18n: {
+          sv: "Ett varumärke för ett företag är som ett rykte för en person.",
+          zh: "公司的品牌就像一个人的声誉。",
+          ja: "企業にとってのブランドは、人にとっての評判と同じだ。"
+        }
       },
       {
         text: "Success is a lousy teacher. It seduces smart people into thinking they cannot lose.",
         author: "Bill Gates",
-        note: "Microsoft co-founder"
+        note: "Microsoft co-founder",
+        i18n: {
+          sv: "Framgång är en dålig lärare. Den lurar smarta människor att tro att de inte kan förlora.",
+          zh: "成功是个糟糕的老师，它会诱使聪明人以为自己不会失败。",
+          ja: "成功は悪い先生だ。賢い人に負けないと錯覚させる。"
+        }
       },
       {
         text: "Timing, perseverance, and ten years of trying will eventually make you look like an overnight success.",
         author: "Biz Stone",
-        note: "Twitter co-founder"
+        note: "Twitter co-founder",
+        i18n: {
+          sv: "Timing, uthållighet och tio års försök får dig till slut att se ut som en succé över en natt.",
+          zh: "时机、坚持和十年的尝试，最终会让你看起来像一夜成名。",
+          ja: "タイミング、粘り強さ、10年の挑戦が、一夜の成功に見せてくれる。"
+        }
       },
       {
         text: "Ideas are easy. Implementation is hard.",
         author: "Guy Kawasaki",
-        note: "Entrepreneur and author"
+        note: "Entrepreneur and author",
+        i18n: {
+          sv: "Idéer är enkla. Genomförande är svårt.",
+          zh: "想法很容易，执行很难。",
+          ja: "アイデアは簡単。実行は難しい。"
+        }
       },
       {
         text: "If you are not embarrassed by the first version of your product, you have launched too late.",
         author: "Reid Hoffman",
-        note: "LinkedIn co-founder"
+        note: "LinkedIn co-founder",
+        i18n: {
+          sv: "Om du inte skäms över den första versionen av din produkt lanserade du för sent.",
+          zh: "如果你不为产品第一版感到尴尬，那说明你发布得太晚了。",
+          ja: "最初の製品版が恥ずかしくないなら、リリースは遅すぎる。"
+        }
       },
       {
         text: "Value your time. It is all you have and all you do not.",
         author: "Marlon Weems",
-        note: "Startup operator"
+        note: "Startup operator",
+        i18n: {
+          sv: "Värdera din tid. Det är allt du har och allt du inte har.",
+          zh: "珍惜你的时间。那是你拥有的一切，也是你没有的一切。",
+          ja: "時間を大切にしよう。それはあなたのすべてであり、同時に不足でもある。"
+        }
       },
       {
         text: "Chase the vision, not the money; the money will end up following you.",
         author: "Tony Hsieh",
-        note: "Zappos former CEO"
+        note: "Zappos former CEO",
+        i18n: {
+          sv: "Jaga visionen, inte pengarna; pengarna kommer att följa efter.",
+          zh: "追逐愿景，而不是金钱；金钱最终会跟随而来。",
+          ja: "お金ではなくビジョンを追え。お金は後からついてくる。"
+        }
       },
       {
         text: "Do not worry about failure; you only have to be right once.",
         author: "Drew Houston",
-        note: "Dropbox co-founder"
+        note: "Dropbox co-founder",
+        i18n: {
+          sv: "Var inte rädd för att misslyckas; du behöver bara ha rätt en gång.",
+          zh: "不要害怕失败；你只需要对一次。",
+          ja: "失敗を恐れるな。正しいのは一度でいい。"
+        }
       },
       {
         text: "Customer service should not be a department, it should be the entire company.",
         author: "Tony Hsieh",
-        note: "Zappos former CEO"
+        note: "Zappos former CEO",
+        i18n: {
+          sv: "Kundservice ska inte vara en avdelning, det ska vara hela företaget.",
+          zh: "客户服务不应只是一个部门，而应是整个公司。",
+          ja: "カスタマーサービスは部署ではなく、会社全体の仕事であるべきだ。"
+        }
       },
       {
         text: "It is not about ideas. It is about making ideas happen.",
         author: "Scott Belsky",
-        note: "Behance co-founder"
+        note: "Behance co-founder",
+        i18n: {
+          sv: "Det handlar inte om idéer. Det handlar om att få idéer att hända.",
+          zh: "关键不在于想法，而在于让想法落地。",
+          ja: "大事なのはアイデアではなく、実現することだ。"
+        }
       },
       {
         text: "Build something people want.",
         author: "Paul Graham",
-        note: "Y Combinator co-founder"
+        note: "Y Combinator co-founder",
+        i18n: {
+          sv: "Bygg något som människor vill ha.",
+          zh: "做出人们真正想要的东西。",
+          ja: "人が本当に欲しいものを作れ。"
+        }
       },
       {
         text: "Do not play games that you do not understand, even if you see lots of other people making money from them.",
         author: "Tony Hsieh",
-        note: "Zappos former CEO"
+        note: "Zappos former CEO",
+        i18n: {
+          sv: "Spela inte spel du inte förstår, även om du ser många andra tjäna pengar på dem.",
+          zh: "不要参与你不理解的游戏，即使你看到很多人从中赚钱。",
+          ja: "理解していないゲームには参加するな。他人が儲けていても同じだ。"
+        }
       },
       {
         text: "The secret to successful hiring is this: look for the people who want to change the world.",
         author: "Marc Benioff",
-        note: "Salesforce founder"
+        note: "Salesforce founder",
+        i18n: {
+          sv: "Hemligheten bakom lyckad rekrytering är detta: sök människor som vill förändra världen.",
+          zh: "成功招聘的秘诀是：寻找那些想改变世界的人。",
+          ja: "採用成功の秘訣は、世界を変えたい人を探すことだ。"
+        }
       },
       {
         text: "Growth and comfort do not coexist.",
         author: "Ginni Rometty",
-        note: "Former IBM CEO"
+        note: "Former IBM CEO",
+        i18n: {
+          sv: "Tillväxt och bekvämlighet samexisterar inte.",
+          zh: "成长与舒适无法并存。",
+          ja: "成長と快適さは同時に存在しない。"
+        }
       },
       {
         text: "Do not let others convince you that the idea is good when your gut tells you it is bad.",
         author: "Kevin Rose",
-        note: "Entrepreneur and investor"
+        note: "Entrepreneur and investor",
+        i18n: {
+          sv: "Låt inte andra övertyga dig om att en idé är bra när magkänslan säger att den är dålig.",
+          zh: "当你的直觉认为某个想法不好时，不要让别人说服你它很好。",
+          ja: "直感が違うと言うなら、他人に良い案だと説得されるな。"
+        }
       },
       {
         text: "If you cannot feed a team with two pizzas, it is too large.",
         author: "Jeff Bezos",
-        note: "Amazon founder"
+        note: "Amazon founder",
+        i18n: {
+          sv: "Om du inte kan mätta ett team med två pizzor är teamet för stort.",
+          zh: "如果两张披萨喂不饱一个团队，那这个团队就太大了。",
+          ja: "2枚のピザで足りないチームは大きすぎる。"
+        }
       },
       {
         text: "Fearlessness is like a muscle. I know from my own life that the more I exercise it the more natural it becomes.",
         author: "Arianna Huffington",
-        note: "HuffPost co-founder"
+        note: "HuffPost co-founder",
+        i18n: {
+          sv: "Oräddhet är som en muskel. Ju mer jag tränar den, desto mer naturlig blir den.",
+          zh: "无畏就像肌肉。训练得越多，它就越自然。",
+          ja: "恐れない心は筋肉のようなもの。鍛えるほど自然になる。"
+        }
       },
       {
         text: "You miss 100 percent of the shots you never take.",
         author: "Wayne Gretzky",
-        note: "Sports legend often quoted in business"
+        note: "Sports legend often quoted in business",
+        i18n: {
+          sv: "Du missar hundra procent av skotten du aldrig tar.",
+          zh: "你不出手，就会百分之百错失机会。",
+          ja: "打たなければ、チャンスは100%逃す。"
+        }
       },
       {
         text: "As long as you are going to be thinking anyway, think big.",
         author: "Donald Trump",
-        note: "Business figure"
+        note: "Business figure",
+        i18n: {
+          sv: "Om du ändå ska tänka, tänk stort.",
+          zh: "既然总要思考，那就想得更大。",
+          ja: "どうせ考えるなら、大きく考えよう。"
+        }
       },
       {
         text: "Fall seven times and stand up eight.",
         author: "Japanese proverb",
         note: "entrepreneurial mindset",
-        originalLang: "ja",
-        originalText: "七転び八起き。"
+        i18n: {
+          sv: "Fall sju gånger och res dig åtta.",
+          zh: "跌倒七次，站起来八次。",
+          ja: "七転び八起き。"
+        }
       },
       {
         text: "Only those who sleep make no mistakes.",
         author: "Ingvar Kamprad",
         note: "IKEA founder",
-        originalLang: "sv",
-        originalText: "Endast den som sover gör inga fel."
+        i18n: {
+          sv: "Endast den som sover gör inga fel.",
+          zh: "只有睡着的人才不会犯错。",
+          ja: "眠っている者だけが、間違いを犯さない。"
+        }
       },
       {
         text: "Simplicity and common sense should characterize planning and strategic direction.",
         author: "Ingvar Kamprad",
         note: "IKEA founder",
-        originalLang: "sv",
-        originalText: "Enkelhet och sunt förnuft ska prägla planering och strategisk inriktning."
-      },
-      {
-        text: "Most things are still unfinished. A wonderful future!",
-        author: "Ingvar Kamprad",
-        note: "IKEA founder",
-        originalLang: "sv",
-        originalText: "Det mesta är ännu ogjort. Underbara framtid!"
+        i18n: {
+          sv: "Enkelhet och sunt förnuft ska prägla planering och strategisk inriktning.",
+          zh: "规划和战略方向应当以简洁与常识为特征。",
+          ja: "計画と戦略の方向性は、シンプルさと常識によって特徴づけられるべきだ。"
+        }
       },
       {
         text: "Today is cruel, tomorrow is crueler, but the day after tomorrow is beautiful.",
         author: "Jack Ma",
         note: "Alibaba co-founder",
-        originalLang: "zh",
-        originalText: "今天很残酷，明天更残酷，后天很美好。"
+        i18n: {
+          sv: "I dag är grym, i morgon ännu grymmare, men i övermorgon blir det vackert.",
+          zh: "今天很残酷，明天更残酷，后天很美好。",
+          ja: "今日は残酷で、明日はもっと残酷だが、明後日は美しい。"
+        }
       },
       {
-        text: "If there is no way out, then make one.",
+        text: "Having no way back is the best way forward.",
         author: "Ren Zhengfei",
         note: "Huawei founder",
-        originalLang: "zh",
-        originalText: "没有退路就是最好的出路。"
+        i18n: {
+          sv: "Att inte ha någon väg tillbaka är den bästa vägen framåt.",
+          zh: "没有退路就是最好的出路。",
+          ja: "退路がないことこそ、最良の活路だ。"
+        }
       },
       {
         text: "Standing at the center of a strong trend, even a pig can fly.",
         author: "Lei Jun",
         note: "Xiaomi founder",
-        originalLang: "zh",
-        originalText: "站在风口上，猪都能飞起来。"
+        i18n: {
+          sv: "Står du mitt i en stark trend kan till och med en gris flyga.",
+          zh: "站在风口上，猪都能飞起来。",
+          ja: "強い追い風の中心に立てば、豚でさえ飛べる。"
+        }
       },
       {
         text: "No challenge, no growth.",
         author: "Soichiro Honda",
         note: "Honda founder",
-        originalLang: "ja",
-        originalText: "チャレンジしてこそ成長がある。"
+        i18n: {
+          sv: "Ingen utmaning, ingen tillväxt.",
+          zh: "没有挑战，就没有成长。",
+          ja: "チャレンジしてこそ成長がある。"
+        }
       },
       {
         text: "Life is one chance.",
         author: "Masayoshi Son",
         note: "SoftBank founder",
-        originalLang: "ja",
-        originalText: "人生は一度きり。"
+        i18n: {
+          sv: "Livet är en enda chans.",
+          zh: "人生只有一次。",
+          ja: "人生は一度きり。"
+        }
       },
       {
-        text: "Work results are determined by attitude, enthusiasm, and ability, in that order.",
+        text: "The result of your work = way of thinking × passion × ability.",
         author: "Kazuo Inamori",
         note: "Kyocera founder",
-        originalLang: "ja",
-        originalText: "仕事の結果は、考え方×熱意×能力で決まる。"
+        i18n: {
+          sv: "Resultatet av ditt arbete = tankesätt × entusiasm × förmåga.",
+          zh: "工作的结果 = 思维方式 × 热情 × 能力。",
+          ja: "仕事の結果は、考え方×熱意×能力で決まる。"
+        }
       }
     ];
 
-    const quoteTranslations = {
-      sv: [
-        "Innovation skiljer en ledare från en följare.",
-        "Det mesta är ännu ogjort. Underbara framtid!",
-        "När något är tillräckligt viktigt gör du det även om oddsen är emot dig.",
-        "Ta vara på det du gör naturligt, för människor kommer att betala för det.",
-        "Följ reglerna, men var kompromisslöst stark.",
-        "Om jag misslyckades skulle jag inte ångra det, men jag skulle ångra att inte ha försökt.",
-        "Dina mest missnöjda kunder är din största källa till lärande.",
-        "Om alla rör sig framåt tillsammans tar framgång hand om sig själv.",
-        "Sättet att komma igång är att sluta prata och börja göra.",
-        "Den största risken är att inte ta någon risk alls.",
-        "Skäms inte för dina misslyckanden, lär av dem och börja om.",
-        "Ett varumärke för ett företag är som ett rykte för en person.",
-        "Framgång är en dålig lärare. Den lurar smarta människor att tro att de inte kan förlora.",
-        "Timing, uthållighet och tio års försök får dig till slut att se ut som en succé över en natt.",
-        "Idéer är enkla. Genomförande är svårt.",
-        "Om du inte skäms över den första versionen av din produkt lanserade du för sent.",
-        "Värdera din tid. Det är allt du har och allt du inte har.",
-        "Jaga visionen, inte pengarna; pengarna kommer att följa efter.",
-        "Var inte rädd för att misslyckas; du behöver bara ha rätt en gång.",
-        "Kundservice ska inte vara en avdelning, det ska vara hela företaget.",
-        "Det handlar inte om idéer. Det handlar om att få idéer att hända.",
-        "Bygg något som människor vill ha.",
-        "Spela inte spel du inte förstår, även om du ser många andra tjäna pengar på dem.",
-        "Hemligheten bakom lyckad rekrytering är detta: sök människor som vill förändra världen.",
-        "Tillväxt och bekvämlighet samexisterar inte.",
-        "Låt inte andra övertyga dig om att en idé är bra när magkänslan säger att den är dålig.",
-        "Om du inte kan mätta ett team med två pizzor är teamet för stort.",
-        "Oräddhet är som en muskel. Ju mer jag tränar den, desto mer naturlig blir den.",
-        "Du missar hundra procent av skotten du aldrig tar.",
-        "Om du ändå ska tänka, tänk stort.",
-        "Fall sju gånger och res dig åtta.",
-        "Endast den som sover gör inga fel.",
-        "Enkelhet och sunt förnuft ska prägla planering och strategisk inriktning.",
-        "Det mesta är ännu ogjort. Underbara framtid!",
-        "I dag är grym, i morgon ännu grymmare, men i övermorgon blir det vackert.",
-        "När det inte finns någon reträttväg, hittar man den bästa vägen framåt.",
-        "Står du mitt i en stark trend kan till och med en gris flyga.",
-        "Ingen utmaning, ingen tillväxt.",
-        "Livet är en enda chans.",
-        "Resultatet i arbetet avgörs av attityd, entusiasm och förmåga, i den ordningen."
-      ],
-      zh: [
-        "创新将领导者与追随者区分开来。",
-        "大多数事情仍有待完成。未来光明！",
-        "当一件事足够重要时，即使胜算不大，你也要去做。",
-        "发挥你天生擅长的事，因为人们会为此买单。",
-        "按规则行事，但要足够勇猛。",
-        "如果我失败了我不会后悔，但我会后悔没有尝试。",
-        "最不满意的客户是你最重要的学习来源。",
-        "如果每个人都一起向前，成功会自然到来。",
-        "开始的方法就是停止空谈，马上行动。",
-        "最大的风险就是不去承担任何风险。",
-        "不要为失败感到羞愧，从中学习并重新开始。",
-        "公司的品牌就像一个人的声誉。",
-        "成功是个糟糕的老师，它会诱使聪明人以为自己不会失败。",
-        "时机、坚持和十年的尝试，最终会让你看起来像一夜成名。",
-        "想法很容易，执行很难。",
-        "如果你不为产品第一版感到尴尬，那说明你发布得太晚了。",
-        "珍惜你的时间。那是你拥有的一切，也是你没有的一切。",
-        "追逐愿景，而不是金钱；金钱最终会跟随而来。",
-        "不要害怕失败；你只需要对一次。",
-        "客户服务不应只是一个部门，而应是整个公司。",
-        "关键不在于想法，而在于让想法落地。",
-        "做出人们真正想要的东西。",
-        "不要参与你不理解的游戏，即使你看到很多人从中赚钱。",
-        "成功招聘的秘诀是：寻找那些想改变世界的人。",
-        "成长与舒适无法并存。",
-        "当你的直觉认为某个想法不好时，不要让别人说服你它很好。",
-        "如果两张披萨喂不饱一个团队，那这个团队就太大了。",
-        "无畏就像肌肉。训练得越多，它就越自然。",
-        "你不出手，就会百分之百错失机会。",
-        "既然总要思考，那就想得更大。",
-        "跌倒七次，站起来八次。",
-        "只有睡着的人才不会犯错。",
-        "规划和战略方向应当以简洁与常识为特征。",
-        "大多数事情仍有待去做。美好的未来。",
-        "今天很残酷，明天更残酷，后天很美好。",
-        "没有退路就是最好的出路。",
-        "站在风口上，猪都能飞起来。",
-        "没有挑战，就没有成长。",
-        "人生只有一次。",
-        "工作的结果由思维方式、热情和能力决定，顺序也是如此。"
-      ],
-      ja: [
-        "イノベーションはリーダーとフォロワーを分ける。",
-        "まだやるべきことはたくさんある。未来は輝いている。",
-        "十分に重要なことなら、勝算が低くても実行する。",
-        "自分が自然にできることを伸ばしなさい。人はそこに価値を払う。",
-        "ルールを守りつつ、徹底的に闘え。",
-        "失敗は後悔しない。後悔するのは挑戦しないことだ。",
-        "最も不満な顧客こそ、最大の学びの源だ。",
-        "全員が同じ方向に進めば、成功は自然についてくる。",
-        "始める方法は、話すのをやめて行動することだ。",
-        "最大のリスクは、まったくリスクを取らないことだ。",
-        "失敗を恥じるな。学んで、また始めればいい。",
-        "企業にとってのブランドは、人にとっての評判と同じだ。",
-        "成功は悪い先生だ。賢い人に負けないと錯覚させる。",
-        "タイミング、粘り強さ、10年の挑戦が、一夜の成功に見せてくれる。",
-        "アイデアは簡単。実行は難しい。",
-        "最初の製品版が恥ずかしくないなら、リリースは遅すぎる。",
-        "時間を大切にしよう。それはあなたのすべてであり、同時に不足でもある。",
-        "お金ではなくビジョンを追え。お金は後からついてくる。",
-        "失敗を恐れるな。正しいのは一度でいい。",
-        "カスタマーサービスは部署ではなく、会社全体の仕事であるべきだ。",
-        "大事なのはアイデアではなく、実現することだ。",
-        "人が本当に欲しいものを作れ。",
-        "理解していないゲームには参加するな。他人が儲けていても同じだ。",
-        "採用成功の秘訣は、世界を変えたい人を探すことだ。",
-        "成長と快適さは同時に存在しない。",
-        "直感が違うと言うなら、他人に良い案だと説得されるな。",
-        "2枚のピザで足りないチームは大きすぎる。",
-        "恐れない心は筋肉のようなもの。鍛えるほど自然になる。",
-        "打たなければ、チャンスは100%逃す。",
-        "どうせ考えるなら、大きく考えよう。",
-        "七転び八起き。",
-        "眠っている者だけが、間違いを犯さない。",
-        "計画と戦略の方向性は、シンプルさと常識によって特徴づけられるべきだ。",
-        "まだやるべきことは大半が残っている。素晴らしい未来だ。",
-        "今日は残酷で、明日はもっと残酷だが、明後日は美しい。",
-        "退路がないことこそ、最良の活路だ。",
-        "強い追い風の中心に立てば、豚でさえ飛べる。",
-        "挑戦がなければ、成長はない。",
-        "人生は一度きり。",
-        "仕事の結果は、考え方・熱意・能力の順で決まる。"
-      ]
-    };
-
-    function getLocalizedQuoteText(index) {
-      const quote = entrepreneurQuotes[index];
-      if (quote && quote.originalLang === currentLanguage && quote.originalText) {
-        return quote.originalText;
+    function getLocalizedQuoteText(quote) {
+      if (currentLanguage !== "en" && quote.i18n && quote.i18n[currentLanguage]) {
+        return quote.i18n[currentLanguage];
       }
-
-      if (currentLanguage === "en") {
-        return quote.text;
-      }
-
-      const list = quoteTranslations[currentLanguage];
-      if (!list || !list[index]) {
-        return quote.text;
-      }
-      return list[index];
+      return quote.text;
     }
 
     const i18n = {
       en: {
-        pageTitle: "time remaining",
         pageTitleCountdown: "time remaining",
         pageTitleCountup: "extra time",
         days: "days",
@@ -1393,11 +1445,13 @@
         chooseLocation: "choose location",
         chooseRotation: "choose rotating locations",
         pinCity: "pin city",
-        unpinCity: "unpin city"
+        unpinCity: "unpin city",
+        toggleLight: "toggle bright mode",
+        toggleDark: "toggle dark mode",
+        languageSelector: "language selector"
       },
       sv: {
-        pageTitle: "aterstaende tid",
-        pageTitleCountdown: "aterstaende tid",
+        pageTitleCountdown: "återstående tid",
         pageTitleCountup: "extra tid",
         days: "dagar",
         hours: "timmar",
@@ -1412,16 +1466,18 @@
         wind: "vind",
         collapseSection: "fall ihop",
         expandSection: "veckla ut",
-        sectionCountdown: "nedrakning",
+        sectionCountdown: "nedräkning",
         sectionLocations: "platser",
         sectionQuote: "citat",
-        chooseLocation: "valj plats",
-        chooseRotation: "valj roterande platser",
-        pinCity: "fasta stad",
-        unpinCity: "losa stad"
+        chooseLocation: "välj plats",
+        chooseRotation: "välj roterande platser",
+        pinCity: "fäst stad",
+        unpinCity: "lossa stad",
+        toggleLight: "växla till ljust läge",
+        toggleDark: "växla till mörkt läge",
+        languageSelector: "språkval"
       },
       zh: {
-        pageTitle: "剩余时间",
         pageTitleCountdown: "剩余时间",
         pageTitleCountup: "额外时间",
         days: "天",
@@ -1443,10 +1499,12 @@
         chooseLocation: "选择地点",
         chooseRotation: "选择轮播地点",
         pinCity: "固定城市",
-        unpinCity: "取消固定城市"
+        unpinCity: "取消固定城市",
+        toggleLight: "切换到浅色模式",
+        toggleDark: "切换到深色模式",
+        languageSelector: "语言选择"
       },
       ja: {
-        pageTitle: "残り時間",
         pageTitleCountdown: "残り時間",
         pageTitleCountup: "延長時間",
         days: "日",
@@ -1468,11 +1526,31 @@
         chooseLocation: "都市を選ぶ",
         chooseRotation: "ローテーション地点を選ぶ",
         pinCity: "都市を固定",
-        unpinCity: "都市の固定を解除"
+        unpinCity: "都市の固定を解除",
+        toggleLight: "ライトモードに切り替え",
+        toggleDark: "ダークモードに切り替え",
+        languageSelector: "言語選択"
       }
     };
 
     let currentLanguage = "en";
+
+    // localStorage can throw (privacy modes, sandboxed file:// pages); fail quietly.
+    function storageGet(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function storageSet(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch (error) {
+        // ignore
+      }
+    }
 
     function t(key) {
       const dict = i18n[currentLanguage] || i18n.en;
@@ -1559,30 +1637,37 @@
       99: "⛈"
     };
 
-    function applyTheme(theme) {
-      document.body.dataset.theme = theme;
-      localStorage.setItem("theme-preference", theme);
+    function refreshThemeToggleLabel() {
       const button = document.getElementById("theme-toggle");
-      const isLight = theme === "light";
+      const isLight = document.documentElement.dataset.theme === "light";
+      const label = isLight ? t("toggleDark") : t("toggleLight");
       button.textContent = isLight ? "◑" : "◐";
-      button.setAttribute("aria-label", isLight ? "toggle dark mode" : "toggle bright mode");
-      button.setAttribute("title", isLight ? "toggle dark mode" : "toggle bright mode");
+      button.setAttribute("aria-label", label);
+      button.setAttribute("title", label);
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      storageSet("theme-preference", theme);
+      refreshThemeToggleLabel();
     }
 
     function setupThemeToggle() {
-      const savedTheme = localStorage.getItem("theme-preference");
-      const preferredTheme = savedTheme || "dark";
-      applyTheme(preferredTheme);
+      // The inline <head> script already applied the saved theme before first paint.
+      applyTheme(storageGet("theme-preference") === "light" ? "light" : "dark");
 
       document.getElementById("theme-toggle").addEventListener("click", () => {
-        const nextTheme = document.body.dataset.theme === "light" ? "dark" : "light";
+        const nextTheme = document.documentElement.dataset.theme === "light" ? "dark" : "light";
         applyTheme(nextTheme);
       });
     }
 
     function applyLanguage(lang) {
       currentLanguage = i18n[lang] ? lang : "en";
-      localStorage.setItem("language-preference", currentLanguage);
+      storageSet("language-preference", currentLanguage);
+
+      document.getElementById("language-bar").setAttribute("aria-label", t("languageSelector"));
+      refreshThemeToggleLabel();
 
       document.querySelectorAll(".lang-button").forEach((button) => {
         const selected = button.dataset.lang === currentLanguage;
@@ -1604,7 +1689,7 @@
     }
 
     function setupLanguageSelector() {
-      const savedLanguage = localStorage.getItem("language-preference") || "en";
+      const savedLanguage = storageGet("language-preference") || "en";
       document.querySelectorAll(".lang-button").forEach((button) => {
         button.addEventListener("click", () => {
           applyLanguage(button.dataset.lang);
@@ -1632,14 +1717,6 @@
       document.getElementById("hours").textContent = pad(hours);
       document.getElementById("minutes").textContent = pad(minutes);
       document.getElementById("seconds").textContent = pad(seconds);
-
-      const endOfDay = new Date(now);
-      endOfDay.setHours(23, 59, 59, 999);
-      const dayLeftMs = endOfDay.getTime() - now.getTime();
-      const dayLeftHours = Math.floor(dayLeftMs / (1000 * 60 * 60));
-      const dayLeftMinutes = Math.floor((dayLeftMs / (1000 * 60)) % 60);
-      document.getElementById("today-progress").textContent =
-        pad(dayLeftHours) + "h " + pad(dayLeftMinutes) + "m left today";
     }
 
     function renderLocations() {
@@ -1693,11 +1770,11 @@
         <article class="${cardClass}" id="${getLocationCardId(location, index)}">
           <div class="location-header">
             <div>
-              <h3 class="city-name"><span class="city-flag" aria-hidden="true">${location.flag || ""}</span>${getLocationText(location, "name")}</h3>
+              <h2 class="city-name"><span class="city-flag" aria-hidden="true">${location.flag || ""}</span>${getLocationText(location, "name")}</h2>
               <div class="city-meta">${getLocationText(location, "meta")}</div>
             </div>
             <div class="location-actions">
-              <span class="weather-status" aria-label="${t("loadingWeather")}">◌</span>
+              <span class="weather-status" role="img" aria-label="${t("loadingWeather")}">◌</span>
             </div>
           </div>
           <div class="city-time"></div>
@@ -1714,12 +1791,15 @@
     function getSingleLocationPickerMarkup(index) {
       const groupName = index === 1 ? "location-slot-2" : "location-slot-3";
       const selectedKey = index === 1 ? selectedSecondLocationKey : selectedThirdLocationKey;
+      // Prevent picking the city already shown in the other fixed slot.
+      const otherKey = index === 1 ? selectedThirdLocationKey : selectedSecondLocationKey;
       const options = getAlphabeticalLocations(selectionLocationPool).map((location) => {
         const key = getLocationKey(location);
         const checked = key === selectedKey ? " checked" : "";
+        const disabled = key === otherKey ? " disabled" : "";
         return `
           <label class="location-option">
-            <input type="radio" name="${groupName}" value="${key}"${checked}>
+            <input type="radio" name="${groupName}" value="${key}"${checked}${disabled}>
             <span>${location.flag || ""} ${getLocationText(location, "name")}</span>
           </label>
         `;
@@ -1791,6 +1871,10 @@
         return;
       }
       const activeRotatingLocations = getActiveRotatingLocations();
+      if (activeRotatingLocations.length <= 1) {
+        // Nothing to rotate to; avoid needless re-render.
+        return;
+      }
       rotatingLocationIndex = (rotatingLocationIndex + 1) % activeRotatingLocations.length;
       locations[3] = activeRotatingLocations[rotatingLocationIndex];
       const card = document.getElementById("location-rotating");
@@ -1813,6 +1897,7 @@
         button.setAttribute("aria-label", isFourthPanelPinned ? t("unpinCity") : t("pinCity"));
         button.setAttribute("title", isFourthPanelPinned ? t("unpinCity") : t("pinCity"));
         button.textContent = isFourthPanelPinned ? "📌" : "📍";
+        saveLocationState();
       });
 
       grid.addEventListener("change", (event) => {
@@ -1835,6 +1920,7 @@
             locations[2] = selectedLocation;
           }
 
+          saveLocationState();
           renderLocations();
           loadWeather();
           return;
@@ -1851,6 +1937,7 @@
               return;
             }
           }
+          saveLocationState();
 
           // Keep the foldout open while selecting multiple locations.
           if (!isRotationPickerExpanded()) {
@@ -1884,24 +1971,92 @@
           return;
         }
 
-        const time = new Intl.DateTimeFormat("en-GB", {
-          timeZone: location.zone,
+        const now = new Date();
+        card.querySelector(".city-time").textContent = getTimeFormatter(location.zone).format(now);
+        card.querySelector(".city-date").textContent = getDateFormatter(getDateLocale(), location.zone).format(now);
+      });
+    }
+
+    // Intl formatters are relatively expensive to build; reuse them across ticks.
+    const formatterCache = new Map();
+
+    function getTimeFormatter(zone) {
+      const key = "time|" + zone;
+      if (!formatterCache.has(key)) {
+        formatterCache.set(key, new Intl.DateTimeFormat("en-GB", {
+          timeZone: zone,
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
           hour12: false
-        }).format(new Date());
+        }));
+      }
+      return formatterCache.get(key);
+    }
 
-        const localizedDate = new Intl.DateTimeFormat(getDateLocale(), {
-          timeZone: location.zone,
+    function getDateFormatter(locale, zone) {
+      const key = "date|" + locale + "|" + zone;
+      if (!formatterCache.has(key)) {
+        formatterCache.set(key, new Intl.DateTimeFormat(locale, {
+          timeZone: zone,
           weekday: "long",
           month: "long",
           day: "numeric"
-        }).format(new Date());
+        }));
+      }
+      return formatterCache.get(key);
+    }
 
-        card.querySelector(".city-time").textContent = time;
-        card.querySelector(".city-date").textContent = localizedDate;
-      });
+    function saveLocationState() {
+      storageSet("location-state", JSON.stringify({
+        second: selectedSecondLocationKey,
+        third: selectedThirdLocationKey,
+        rotation: Array.from(selectedRotationLocationKeys),
+        pinned: isFourthPanelPinned,
+        pinnedKey: isFourthPanelPinned && locations[3] ? getLocationKey(locations[3]) : null
+      }));
+    }
+
+    // Restore saved selections, ignoring any keys that no longer match a known location.
+    function loadLocationState() {
+      let saved;
+      try {
+        saved = JSON.parse(storageGet("location-state") || "null");
+      } catch (error) {
+        saved = null;
+      }
+      if (!saved || typeof saved !== "object") {
+        return;
+      }
+
+      const second = getLocationByKey(saved.second);
+      const third = getLocationByKey(saved.third);
+      if (second && third && saved.second !== saved.third) {
+        selectedSecondLocationKey = saved.second;
+        selectedThirdLocationKey = saved.third;
+        locations[1] = second;
+        locations[2] = third;
+      }
+
+      if (Array.isArray(saved.rotation)) {
+        const validKeys = new Set(rotatingLocations.map((location) => getLocationKey(location)));
+        const keys = saved.rotation.filter((key) => validKeys.has(key));
+        if (keys.length > 0) {
+          selectedRotationLocationKeys = new Set(keys);
+        }
+      }
+
+      syncFourthLocationWithSelection(true);
+
+      if (saved.pinned) {
+        const active = getActiveRotatingLocations();
+        const pinnedIndex = active.findIndex((location) => getLocationKey(location) === saved.pinnedKey);
+        if (pinnedIndex >= 0) {
+          isFourthPanelPinned = true;
+          rotatingLocationIndex = pinnedIndex;
+          locations[3] = active[pinnedIndex];
+        }
+      }
     }
 
     function pickDailyQuote() {
@@ -1909,9 +2064,45 @@
       const seed = Date.UTC(utc8Now.getUTCFullYear(), utc8Now.getUTCMonth(), utc8Now.getUTCDate()) / 86400000;
       const quoteIndex = seed % entrepreneurQuotes.length;
       const quote = entrepreneurQuotes[quoteIndex];
-      document.getElementById("quote-text").textContent = getLocalizedQuoteText(quoteIndex);
+      document.getElementById("quote-text").textContent = getLocalizedQuoteText(quote);
       document.getElementById("quote-author").textContent = quote.author;
       document.getElementById("quote-note").textContent = quote.note;
+    }
+
+    // Cache weather per city so re-renders and the 3s rotation don't hit the API.
+    // Stores the in-flight promise too, so concurrent callers share one request.
+    const WEATHER_TTL_MS = 15 * 60 * 1000;
+    const weatherCache = new Map(); // locationKey -> { promise, ts }
+
+    function fetchCurrentWeather(location) {
+      const key = getLocationKey(location);
+      const cached = weatherCache.get(key);
+      if (cached && Date.now() - cached.ts < WEATHER_TTL_MS) {
+        return cached.promise;
+      }
+
+      const url = new URL("https://api.open-meteo.com/v1/forecast");
+      url.searchParams.set("latitude", location.latitude);
+      url.searchParams.set("longitude", location.longitude);
+      url.searchParams.set("current", "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m");
+      url.searchParams.set("timezone", "auto");
+
+      const promise = fetch(url)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Weather request failed");
+          }
+          return response.json();
+        })
+        .then((data) => data.current)
+        .catch((error) => {
+          // Don't cache failures; allow the next call to retry.
+          weatherCache.delete(key);
+          throw error;
+        });
+
+      weatherCache.set(key, { promise, ts: Date.now() });
+      return promise;
     }
 
     async function loadWeather(indexes) {
@@ -1928,19 +2119,7 @@
         const details = card.querySelector(".weather-details");
 
         try {
-          const url = new URL("https://api.open-meteo.com/v1/forecast");
-          url.searchParams.set("latitude", location.latitude);
-          url.searchParams.set("longitude", location.longitude);
-          url.searchParams.set("current", "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m");
-          url.searchParams.set("timezone", "auto");
-
-          const response = await fetch(url);
-          if (!response.ok) {
-            throw new Error("Weather request failed");
-          }
-
-          const data = await response.json();
-          const current = data.current;
+          const current = await fetchCurrentWeather(location);
           const weatherLabel = weatherCodeMap[current.weather_code] || "•";
 
           status.textContent = weatherLabel;
@@ -1958,17 +2137,23 @@
       }));
     }
 
+    // Single clock tick aligned to the wall-clock second, so displayed seconds don't skip.
+    function tick() {
+      updateCountdown();
+      updateLocationTimes();
+      setTimeout(tick, 1000 - (Date.now() % 1000));
+    }
+
     function init() {
       syncFourthLocationWithSelection(true);
+      loadLocationState();
       setupThemeToggle();
       setupSectionToggles();
       setupRotatingPanelPinToggle();
       setupLanguageSelector();
-      updateCountdown();
       pickDailyQuote();
 
-      setInterval(updateCountdown, 1000);
-      setInterval(updateLocationTimes, 1000);
+      tick();
       setInterval(rotateFourthLocation, 3000);
     }
 
